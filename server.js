@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
     const uploadDir = path.join(__dirname, "uploads", "images")
     try {
       await fs.mkdir(uploadDir, {
-        recursive: true
+        recursive: true,
       })
       cb(null, uploadDir)
     } catch (error) {
@@ -55,13 +55,17 @@ const upload = multer({
 })
 
 // Middleware
-app.use(express.json({
-  limit: "50mb"
-}))
-app.use(express.urlencoded({
-  limit: "50mb",
-  extended: true
-}))
+app.use(
+  express.json({
+    limit: "50mb",
+  }),
+)
+app.use(
+  express.urlencoded({
+    limit: "50mb",
+    extended: true,
+  }),
+)
 app.use(express.static("."))
 app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
@@ -75,14 +79,14 @@ const authenticateToken = (req, res, next) => {
 
   if (!token) {
     return res.status(401).json({
-      message: "Токен доступу відсутній"
+      message: "Токен доступу відсутній",
     })
   }
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
       return res.status(403).json({
-        message: "Недійсний токен"
+        message: "Недійсний токен",
       })
     }
     req.user = user
@@ -99,7 +103,7 @@ const requireAdmin = async (req, res, next) => {
 
     if (!token) {
       return res.status(401).json({
-        message: "Access token required"
+        message: "Access token required",
       })
     }
 
@@ -109,7 +113,7 @@ const requireAdmin = async (req, res, next) => {
     const result = await pool.query("SELECT role FROM users WHERE id = $1", [decoded.userId])
     if (result.rows.length === 0 || result.rows[0].role !== "admin") {
       return res.status(403).json({
-        message: "Admin access required"
+        message: "Admin access required",
       })
     }
 
@@ -117,7 +121,7 @@ const requireAdmin = async (req, res, next) => {
     next()
   } catch (error) {
     return res.status(403).json({
-      message: "Invalid or expired token"
+      message: "Invalid or expired token",
     })
   }
 }
@@ -127,7 +131,7 @@ app.post("/api/upload-image", requireAdmin, upload.single("image"), async (req, 
   try {
     if (!req.file) {
       return res.status(400).json({
-        error: "Файл не завантажено"
+        error: "Файл не завантажено",
       })
     }
 
@@ -143,7 +147,7 @@ app.post("/api/upload-image", requireAdmin, upload.single("image"), async (req, 
   } catch (error) {
     console.error("Image upload error:", error)
     res.status(500).json({
-      error: "Помилка завантаження зображення"
+      error: "Помилка завантаження зображення",
     })
   }
 })
@@ -347,13 +351,13 @@ app.post("/api/register", async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({
-        message: "Email та пароль обов'язкові"
+        message: "Email та пароль обов'язкові",
       })
     }
 
     if (password.length < 6) {
       return res.status(400).json({
-        message: "Пароль повинен містити мінімум 6 символів"
+        message: "Пароль повинен містити мінімум 6 символів",
       })
     }
 
@@ -361,7 +365,7 @@ app.post("/api/register", async (req, res) => {
     const existingUser = await pool.query("SELECT id FROM users WHERE email = $1", [email])
     if (existingUser.rows.length > 0) {
       return res.status(400).json({
-        message: "Користувач з таким email вже існує"
+        message: "Користувач з таким email вже існує",
       })
     }
 
@@ -379,11 +383,13 @@ app.post("/api/register", async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign({
-      userId: user.id,
-      email: user.email
-    }, JWT_SECRET, {
-      expiresIn: "24h",
-    })
+        userId: user.id,
+        email: user.email,
+      },
+      JWT_SECRET, {
+        expiresIn: "24h",
+      },
+    )
 
     res.status(201).json({
       message: "Користувач успішно зареєстрований",
@@ -393,7 +399,7 @@ app.post("/api/register", async (req, res) => {
   } catch (error) {
     console.error("Registration error:", error)
     res.status(500).json({
-      message: "Внутрішня помилка сервера"
+      message: "Внутрішня помилка сервера",
     })
   }
 })
@@ -408,7 +414,7 @@ app.post("/api/login", async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({
-        message: "Email та пароль обов'язкові"
+        message: "Email та пароль обов'язкові",
       })
     }
 
@@ -416,7 +422,7 @@ app.post("/api/login", async (req, res) => {
     const result = await pool.query("SELECT id, email, password_hash FROM users WHERE email = $1", [email])
     if (result.rows.length === 0) {
       return res.status(401).json({
-        message: "Невірний email або пароль"
+        message: "Невірний email або пароль",
       })
     }
 
@@ -426,17 +432,19 @@ app.post("/api/login", async (req, res) => {
     const isValidPassword = await bcrypt.compare(password, user.password_hash)
     if (!isValidPassword) {
       return res.status(401).json({
-        message: "Невірний email або пароль"
+        message: "Невірний email або пароль",
       })
     }
 
     // Generate JWT token
     const token = jwt.sign({
-      userId: user.id,
-      email: user.email
-    }, JWT_SECRET, {
-      expiresIn: "24h",
-    })
+        userId: user.id,
+        email: user.email,
+      },
+      JWT_SECRET, {
+        expiresIn: "24h",
+      },
+    )
 
     res.json({
       message: "Успішний вхід",
@@ -446,7 +454,7 @@ app.post("/api/login", async (req, res) => {
   } catch (error) {
     console.error("Login error:", error)
     res.status(500).json({
-      message: "Внутрішня помилка сервера"
+      message: "Внутрішня помилка сервера",
     })
   }
 })
@@ -468,7 +476,7 @@ app.post("/api/admin/login", async (req, res) => {
       console.log(" Password mismatch")
       return res.status(401).json({
         success: false,
-        message: "Невірний пароль"
+        message: "Невірний пароль",
       })
     }
 
@@ -490,12 +498,14 @@ app.post("/api/admin/login", async (req, res) => {
     }
 
     const token = jwt.sign({
-      userId: admin.id,
-      email: admin.email,
-      role: admin.role
-    }, JWT_SECRET, {
-      expiresIn: "24h"
-    })
+        userId: admin.id,
+        email: admin.email,
+        role: admin.role,
+      },
+      JWT_SECRET, {
+        expiresIn: "24h",
+      },
+    )
 
     console.log(" Admin login successful, user:", admin)
 
@@ -508,7 +518,7 @@ app.post("/api/admin/login", async (req, res) => {
     console.error(" Admin login error:", error)
     res.status(500).json({
       success: false,
-      message: "Внутрішня помилка сервера"
+      message: "Внутрішня помилка сервера",
     })
   }
 })
@@ -523,17 +533,17 @@ app.get("/api/profile", authenticateToken, async (req, res) => {
 
     if (result.rows.length === 0) {
       return res.status(404).json({
-        message: "Користувач не знайдений"
+        message: "Користувач не знайдений",
       })
     }
 
     res.json({
-      user: result.rows[0]
+      user: result.rows[0],
     })
   } catch (error) {
     console.error("Get profile error:", error)
     res.status(500).json({
-      message: "Внутрішня помилка сервера"
+      message: "Внутрішня помилка сервера",
     })
   }
 })
@@ -570,7 +580,7 @@ app.put("/api/profile", authenticateToken, async (req, res) => {
 
     if (result.rows.length === 0) {
       return res.status(404).json({
-        message: "Користувач не знайдений"
+        message: "Користувач не знайдений",
       })
     }
 
@@ -581,7 +591,7 @@ app.put("/api/profile", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Update profile error:", error)
     res.status(500).json({
-      message: "Внутрішня помилка сервера"
+      message: "Внутрішня помилка сервера",
     })
   }
 })
@@ -607,7 +617,7 @@ app.get("/api/quizzes", async (req, res) => {
   } catch (error) {
     console.error("Get quizzes error:", error)
     res.status(500).json({
-      error: "Помилка отримання тестів"
+      error: "Помилка отримання тестів",
     })
   }
 })
@@ -619,7 +629,7 @@ app.get("/api/quizzes/:id", async (req, res) => {
 
     if (result.rows.length === 0) {
       return res.status(404).json({
-        error: "Тест не знайдено"
+        error: "Тест не знайдено",
       })
     }
 
@@ -627,7 +637,7 @@ app.get("/api/quizzes/:id", async (req, res) => {
   } catch (error) {
     console.error("Get quiz error:", error)
     res.status(500).json({
-      error: "Помилка отримання тесту"
+      error: "Помилка отримання тесту",
     })
   }
 })
@@ -722,7 +732,7 @@ app.post("/api/admin/quizzes", requireAdmin, async (req, res) => {
     await client.query("ROLLBACK")
     console.error("Error creating quiz:", error)
     res.status(500).json({
-      error: "Failed to create quiz"
+      error: "Failed to create quiz",
     })
   } finally {
     client.release()
@@ -738,7 +748,7 @@ app.get("/api/admin/quizzes/:id", requireAdmin, async (req, res) => {
 
     if (quizResult.rows.length === 0) {
       return res.status(404).json({
-        error: "Quiz not found"
+        error: "Quiz not found",
       })
     }
 
@@ -808,7 +818,7 @@ app.get("/api/admin/quizzes/:id", requireAdmin, async (req, res) => {
   } catch (error) {
     console.error("Get quiz error:", error)
     res.status(500).json({
-      error: "Error retrieving quiz"
+      error: "Error retrieving quiz",
     })
   }
 })
@@ -911,7 +921,7 @@ app.put("/api/admin/quizzes/:id", requireAdmin, async (req, res) => {
     await client.query("ROLLBACK")
     console.error("Update quiz error:", error)
     res.status(500).json({
-      error: "Error updating quiz"
+      error: "Error updating quiz",
     })
   } finally {
     client.release()
@@ -937,7 +947,7 @@ app.post("/api/quizzes/:id/submit", authenticateToken, async (req, res) => {
       await client.query("ROLLBACK")
       return res.status(404).json({
         success: false,
-        error: "Quiz not found"
+        error: "Quiz not found",
       })
     }
 
@@ -1098,7 +1108,7 @@ app.get("/api/users/:id", authenticateToken, async (req, res) => {
     // Verify user can access this data
     if (req.user.userId !== userId) {
       return res.status(403).json({
-        message: "Доступ заборонено"
+        message: "Доступ заборонено",
       })
     }
 
@@ -1109,7 +1119,7 @@ app.get("/api/users/:id", authenticateToken, async (req, res) => {
 
     if (result.rows.length === 0) {
       return res.status(404).json({
-        message: "Користувач не знайдений"
+        message: "Користувач не знайдений",
       })
     }
 
@@ -1117,7 +1127,7 @@ app.get("/api/users/:id", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Get user error:", error)
     res.status(500).json({
-      message: "Помилка сервера"
+      message: "Помилка сервера",
     })
   }
 })
@@ -1129,7 +1139,7 @@ app.get("/api/users/:id/stats", authenticateToken, async (req, res) => {
     // Verify user can access this data
     if (req.user.userId !== userId) {
       return res.status(403).json({
-        message: "Доступ заборонено"
+        message: "Доступ заборонено",
       })
     }
 
@@ -1140,7 +1150,7 @@ app.get("/api/users/:id/stats", authenticateToken, async (req, res) => {
 
     if (userResult.rows.length === 0) {
       return res.status(404).json({
-        message: "Користувач не знайдений"
+        message: "Користувач не знайдений",
       })
     }
 
@@ -1168,7 +1178,7 @@ app.get("/api/users/:id/stats", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Get user stats error:", error)
     res.status(500).json({
-      message: "Помилка сервера"
+      message: "Помилка сервера",
     })
   }
 })
@@ -1181,7 +1191,7 @@ app.get("/api/users/:userId/results/:resultId", authenticateToken, async (req, r
     // Verify user can access this data
     if (req.user.userId !== userId) {
       return res.status(403).json({
-        message: "Доступ заборонено"
+        message: "Доступ заборонено",
       })
     }
 
@@ -1195,7 +1205,7 @@ app.get("/api/users/:userId/results/:resultId", authenticateToken, async (req, r
 
     if (result.rows.length === 0) {
       return res.status(404).json({
-        message: "Результат не знайдений"
+        message: "Результат не знайдений",
       })
     }
 
@@ -1219,7 +1229,7 @@ app.get("/api/users/:userId/results/:resultId", authenticateToken, async (req, r
   } catch (error) {
     console.error("Get user result error:", error)
     res.status(500).json({
-      message: "Помилка сервера"
+      message: "Помилка сервера",
     })
   }
 })
@@ -1249,7 +1259,7 @@ app.get("/api/debug/users", async (req, res) => {
   } catch (error) {
     console.error("Debug users error:", error)
     res.status(500).json({
-      error: "Помилка отримання користувачів"
+      error: "Помилка отримання користувачів",
     })
   }
 })
@@ -1308,7 +1318,7 @@ app.get("/api/leaderboard", async (req, res) => {
   } catch (error) {
     console.error("Get leaderboard error:", error)
     res.status(500).json({
-      error: "Помилка отримання рейтингу"
+      error: "Помилка отримання рейтингу",
     })
   }
 })
@@ -1348,7 +1358,7 @@ app.get("/api/stats/overview", async (req, res) => {
   } catch (error) {
     console.error("Get stats overview error:", error)
     res.status(500).json({
-      error: "Помилка отримання статистики"
+      error: "Помилка отримання статистики",
     })
   }
 })
@@ -1386,7 +1396,7 @@ app.get("/api/admin/results", requireAdmin, async (req, res) => {
   } catch (error) {
     console.error("Get results error:", error)
     res.status(500).json({
-      error: "Помилка отримання результатів"
+      error: "Помилка отримання результатів",
     })
   }
 })
@@ -1444,7 +1454,7 @@ app.get("/api/admin/dashboard", requireAdmin, async (req, res) => {
   } catch (error) {
     console.error("Dashboard data error:", error)
     res.status(500).json({
-      error: "Помилка отримання даних дашборду"
+      error: "Помилка отримання даних дашборду",
     })
   }
 })
@@ -1463,7 +1473,7 @@ app.get("/api/admin/results", requireAdmin, async (req, res) => {
   } catch (error) {
     console.error("Get admin results error:", error)
     res.status(500).json({
-      error: "Помилка отримання результатів"
+      error: "Помилка отримання результатів",
     })
   }
 })
@@ -1515,7 +1525,7 @@ app.get("/api/stats/overview", async (req, res) => {
   } catch (error) {
     console.error("Get overview stats error:", error)
     res.status(500).json({
-      error: "Помилка отримання загальної статистики"
+      error: "Помилка отримання загальної статистики",
     })
   }
 })
@@ -1532,7 +1542,7 @@ app.get("/api/users/:id/stats", async (req, res) => {
     )
     if (userResult.rows.length === 0) {
       return res.status(404).json({
-        error: "Користувач не знайдений"
+        error: "Користувач не знайдений",
       })
     }
 
@@ -1601,7 +1611,7 @@ app.get("/api/users/:id/stats", async (req, res) => {
   } catch (error) {
     console.error("Get user stats error:", error)
     res.status(500).json({
-      error: "Помилка отримання статистики"
+      error: "Помилка отримання статистики",
     })
   }
 })
@@ -1623,7 +1633,7 @@ app.get("/api/users", async (req, res) => {
   } catch (error) {
     console.error("Get users error:", error)
     res.status(500).json({
-      error: "Помилка отримання користувачів"
+      error: "Помилка отримання користувачів",
     })
   }
 })
