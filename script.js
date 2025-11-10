@@ -1,634 +1,797 @@
-// State Management
+// Global variables
 let currentUser = null
 let currentQuiz = null
 let currentQuestionIndex = 0
 let userAnswers = []
+let quizzes = []
 let quizStartTime = null
-let quizResults = null
+let detailedResults = null
+let isAuthenticating = false
+let authRetryCount = 0
+const MAX_AUTH_RETRIES = 3
+const authCheckTimeout = null
+let lastAuthCheck = 0
+const AUTH_CHECK_COOLDOWN = 5000 // 5 seconds cooldown between auth checks
 
-// API Base URL
-const API_URL = window.location.origin
-
-// Initialize App
+// Initialize app
 document.addEventListener("DOMContentLoaded", () => {
-  initializeApp()
-  setupEventListeners()
-  checkAuthentication()
+  if (!isAuthenticating) {
+    checkAuthentication()
+  }
 })
 
-// Initialize Application
-function initializeApp() {
-  setupNavigation()
-  loadDashboardData()
-}
-
-// Setup Event Listeners
-function setupEventListeners() {
-  // Navigation
-  const navItems = document.querySelectorAll(".nav-item[data-section]")
-  navItems.forEach((item) => {
-    item.addEventListener("click", () => {
-      const section = item.dataset.section
-      navigateToSection(section)
-    })
-  })
-
-  // Mobile menu toggle
-  const mobileToggle = document.getElementById("mobileToggle")
-  const sidebar = document.querySelector(".sidebar")
-  if (mobileToggle && sidebar) {
-    mobileToggle.addEventListener("click", () => {
-      sidebar.classList.toggle("active")
-    })
-  }
-
-  // Quiz controls
-  const prevBtn = document.getElementById("prevQuestion")
-  const nextBtn = document.getElementById("nextQuestion")
-  const submitBtn = document.getElementById("submitQuiz")
-
-  if (prevBtn) prevBtn.addEventListener("click", previousQuestion)
-  if (nextBtn) nextBtn.addEventListener("click", nextQuestion)
-  if (submitBtn) submitBtn.addEventListener("click", submitQuiz)
-
-  // Results buttons
-  const backToQuizzesBtn = document.getElementById("backToQuizzes")
-  const viewDetailedBtn = document.getElementById("viewDetailedResults")
-  const backToResultsBtn = document.getElementById("backToResults")
-
-  if (backToQuizzesBtn) {
-    backToQuizzesBtn.addEventListener("click", () => navigateToSection("quizzes"))
-  }
-  if (viewDetailedBtn) {
-    viewDetailedBtn.addEventListener("click", showDetailedResults)
-  }
-  if (backToResultsBtn) {
-    backToResultsBtn.addEventListener("click", () => navigateToSection("quiz-results"))
-  }
-}
-
-// Check Authentication
 async function checkAuthentication() {
+  const now = Date.now()
+  if (isAuthenticating || now - lastAuthCheck < AUTH_CHECK_COOLDOWN) {
+    return
+  }
+
+  isAuthenticating = true
+  lastAuthCheck = now
   const token = localStorage.getItem("token")
   const userId = localStorage.getItem("userId")
 
   if (!token || !userId) {
-    // Create demo user for testing
-    currentUser = {
-      id: 1,
-      email: "demo@student.com",
-      role: "student",
+    if (!window.location.pathname.includes("auth.html") && !window.location.pathname.includes("index.html")) {
+      isAuthenticating = false
+      setTimeout(() => {
+        if (!window.location.pathname.includes("auth.html")) {
+          window.location.href = "/auth.html"
+        }
+      }, 1000)
+    } else {
+      isAuthenticating = false
     }
-    localStorage.setItem("userId", "1")
-    localStorage.setItem("token", "demo-token")
-    updateUserInfo()
     return
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/users/${userId}`, {
+    // Verify token and get user info
+    const response = await fetch(`/api/users/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
 
     if (response.ok) {
-      currentUser = await response.json()
-      updateUserInfo()
-    } else {
-      // Fallback to demo user
-      currentUser = {
-        id: Number.parseInt(userId),
-        email: "demo@student.com",
-        role: "student",
+      const userData = await response.json()
+      currentUser = userData
+      authRetryCount = 0 // Reset retry count on success
+      isAuthenticating = false
+      initializeApp()
+    } else if (response.status === 401 || response.status === 403) {
+      console.warn("Authentication failed, cleaning up tokens")
+      localStorage.removeItem("token")
+      localStorage.removeItem("userId")
+      isAuthenticating = false
+
+      if (!window.location.pathname.includes("auth.html")) {
+        setTimeout(() => {
+          if (!window.location.pathname.includes("auth.html")) {
+            window.location.href = "/auth.html"
+          }
+        }, 2000)
       }
-      updateUserInfo()
+    } else {
+      authRetryCount++
+      if (authRetryCount >= MAX_AUTH_RETRIES) {
+        console.error("Max authentication retries reached, redirecting to login")
+        localStorage.removeItem("token")
+        localStorage.removeItem("userId")
+        isAuthenticating = false
+
+        if (!window.location.pathname.includes("auth.html")) {
+          setTimeout(() => {
+            window.location.href = "/auth.html"
+          }, 3000)
+        }
+      } else {
+        const retryDelay = Math.min(2000 * Math.pow(2, authRetryCount - 1), 10000)
+        setTimeout(() => {
+          isAuthenticating = false
+          checkAuthentication()
+        }, retryDelay)
+      }
     }
   } catch (error) {
-    console.error("Auth error:", error)
-    currentUser = {
-      id: 1,
-      email: "demo@student.com",
-      role: "student",
-    }
-    updateUserInfo()
-  }
-}
+    console.error("Authentication error:", error)
 
-// Update User Info in UI
-function updateUserInfo() {
-  const userName = document.getElementById("currentUserName")
-  const userRole = document.getElementById("currentUserRole")
-
-  if (currentUser) {
-    if (userName) userName.textContent = currentUser.email || "Студент"
-    if (userRole) userRole.textContent = currentUser.role || "student"
-  }
-}
-
-// Navigation
-function setupNavigation() {
-  const sections = document.querySelectorAll(".content-section")
-  sections.forEach((section) => section.classList.remove("active"))
-  const dashboard = document.getElementById("dashboard")
-  if (dashboard) dashboard.classList.add("active")
-}
-
-function navigateToSection(sectionId) {
-  // Update sections
-  const sections = document.querySelectorAll(".content-section")
-  sections.forEach((section) => section.classList.remove("active"))
-  const targetSection = document.getElementById(sectionId)
-  if (targetSection) targetSection.classList.add("active")
-
-  // Update nav items
-  const navItems = document.querySelectorAll(".nav-item")
-  navItems.forEach((item) => item.classList.remove("active"))
-  const activeNav = document.querySelector(`[data-section="${sectionId}"]`)
-  if (activeNav) activeNav.classList.add("active")
-
-  // Load section data
-  loadSectionData(sectionId)
-
-  // Close mobile menu
-  const sidebar = document.querySelector(".sidebar")
-  if (sidebar && window.innerWidth <= 1024) {
-    sidebar.classList.remove("active")
-  }
-
-  // Scroll to top
-  window.scrollTo({ top: 0, behavior: "smooth" })
-}
-
-// Load Section Data
-function loadSectionData(sectionId) {
-  switch (sectionId) {
-    case "dashboard":
-      loadDashboardData()
-      break
-    case "quizzes":
-      loadQuizzes()
-      break
-    case "leaderboard":
-      loadLeaderboard()
-      break
-    case "statistics":
-      loadStatistics()
-      break
-    case "detailed-results":
-      if (quizResults) {
-        displayDetailedResults()
+    if (error.name === "TypeError" && error.message.includes("fetch")) {
+      // Network error - retry without clearing tokens
+      authRetryCount++
+      if (authRetryCount >= MAX_AUTH_RETRIES) {
+        console.error("Network connectivity issues, please check your connection")
+        isAuthenticating = false
+        return
+      } else {
+        const retryDelay = Math.min(3000 * authRetryCount, 15000)
+        setTimeout(() => {
+          isAuthenticating = false
+          checkAuthentication()
+        }, retryDelay)
       }
-      break
+    } else {
+      // Other errors - treat as auth failure
+      authRetryCount++
+      if (authRetryCount >= MAX_AUTH_RETRIES) {
+        localStorage.removeItem("token")
+        localStorage.removeItem("userId")
+        isAuthenticating = false
+
+        if (!window.location.pathname.includes("auth.html")) {
+          setTimeout(() => {
+            window.location.href = "/auth.html"
+          }, 3000)
+        }
+      } else {
+        setTimeout(() => {
+          isAuthenticating = false
+          checkAuthentication()
+        }, 2000 * authRetryCount)
+      }
+    }
   }
 }
 
-// Dashboard Data
-async function loadDashboardData() {
-  try {
-    if (!currentUser) return
+function initializeApp() {
+  // Update user info in sidebar
+  document.getElementById("currentUserName").textContent = currentUser.email
+  document.getElementById("currentUserRole").textContent = currentUser.role || "student"
 
-    const response = await fetch(`${API_URL}/api/users/${currentUser.id}/stats`, {
+  setupEventListeners()
+  loadDashboard()
+}
+
+function setupEventListeners() {
+  // Navigation
+  document.querySelectorAll(".nav-item").forEach((item) => {
+    item.addEventListener("click", function (e) {
+      e.preventDefault()
+      const section = this.dataset.section
+      navigateToSection(section)
+    })
+  })
+
+  // Quiz controls
+  document.getElementById("prevQuestion").addEventListener("click", (e) => {
+    e.preventDefault()
+    previousQuestion()
+  })
+  document.getElementById("nextQuestion").addEventListener("click", (e) => {
+    e.preventDefault()
+    nextQuestion()
+  })
+  document.getElementById("submitQuiz").addEventListener("click", (e) => {
+    e.preventDefault()
+    submitQuiz()
+  })
+
+  // Results actions
+  document.getElementById("backToQuizzes").addEventListener("click", (e) => {
+    e.preventDefault()
+    navigateToSection("quizzes")
+  })
+  document.getElementById("viewDetailedResults").addEventListener("click", (e) => {
+    e.preventDefault()
+    showDetailedResults()
+  })
+  document.getElementById("backToResults").addEventListener("click", (e) => {
+    e.preventDefault()
+    document.getElementById("detailed-results").classList.remove("active")
+    document.getElementById("quiz-results").classList.add("active")
+  })
+
+  // Logout button
+  document.getElementById("logoutBtn").addEventListener("click", (e) => {
+    e.preventDefault()
+    logout()
+  })
+}
+
+function logout() {
+  if (confirm("Ви впевнені, що хочете вийти?")) {
+    localStorage.removeItem("token")
+    localStorage.removeItem("userId")
+    setTimeout(() => {
+      window.location.href = "/auth.html"
+    }, 500)
+  }
+}
+
+let navigationTimeout = null
+
+function navigateToSection(sectionName) {
+  if (navigationTimeout) {
+    clearTimeout(navigationTimeout)
+  }
+
+  navigationTimeout = setTimeout(() => {
+    // Update navigation
+    document.querySelectorAll(".nav-item").forEach((item) => {
+      item.classList.remove("active")
+    })
+    const targetNav = document.querySelector(`[data-section="${sectionName}"]`)
+    if (targetNav) {
+      targetNav.classList.add("active")
+    }
+
+    // Show section
+    document.querySelectorAll(".content-section").forEach((section) => {
+      section.classList.remove("active")
+    })
+    const targetSection = document.getElementById(sectionName)
+    if (targetSection) {
+      targetSection.classList.add("active")
+    }
+
+    // Load section data
+    switch (sectionName) {
+      case "dashboard":
+        loadDashboard()
+        break
+      case "quizzes":
+        loadQuizzes()
+        break
+      case "leaderboard":
+        loadLeaderboard()
+        break
+      case "statistics":
+        loadStatistics()
+        break
+    }
+  }, 100) // Small delay to prevent rapid successive calls
+}
+
+// Dashboard functions
+async function loadDashboard() {
+  try {
+    const token = localStorage.getItem("token")
+    const response = await fetch(`/api/users/${currentUser.id}/stats`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (response.status === 401 || response.status === 403) {
+      console.warn("Authentication expired during dashboard load")
+
+      const refreshResult = await tryRefreshAuth()
+      if (!refreshResult) {
+        localStorage.removeItem("token")
+        localStorage.removeItem("userId")
+
+        alert("Ваша сесія закінчилася. Будь ласка, увійдіть знову.")
+        setTimeout(() => {
+          window.location.href = "/auth.html"
+        }, 2000)
+      }
+      return
+    }
+
+    const data = await response.json()
+
+    // Update dashboard stats
+    document.getElementById("userTestsCompleted").textContent = data.stats.testsCompleted
+    document.getElementById("userAverageScore").textContent = `${data.stats.averageScore}%`
+    document.getElementById("userTotalScore").textContent = data.stats.totalScore
+
+    // Load recent results
+    const recentResultsContainer = document.getElementById("recentResults")
+    if (data.recentResults.length === 0) {
+      recentResultsContainer.innerHTML =
+        '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">Ще немає результатів тестів</p>'
+    } else {
+      recentResultsContainer.innerHTML = data.recentResults
+        .map(
+          (result) => `
+                <div class="result-item">
+                    <div class="result-info">
+                        <h4>${result.quiz_title}</h4>
+                        <div class="result-date">${new Date(result.completed_at).toLocaleDateString("uk-UA")}</div>
+                    </div>
+                    <div class="result-score">${result.score}%</div>
+                </div>
+            `,
+        )
+        .join("")
+    }
+  } catch (error) {
+    console.error("Error loading dashboard:", error)
+    const recentResultsContainer = document.getElementById("recentResults")
+    if (recentResultsContainer) {
+      recentResultsContainer.innerHTML =
+        '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">Помилка завантаження даних</p>'
+    }
+  }
+}
+
+async function tryRefreshAuth() {
+  try {
+    const token = localStorage.getItem("token")
+    const userId = localStorage.getItem("userId")
+
+    if (!token || !userId) {
+      return false
+    }
+
+    const response = await fetch(`/api/users/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
     })
 
     if (response.ok) {
-      const data = await response.json()
-      updateDashboardStats(data.stats)
-      updateRecentResults(data.recentResults)
-    } else {
-      // Use mock data
-      updateDashboardStats({
-        testsCompleted: 0,
-        averageScore: 0,
-        totalScore: 0,
-      })
+      const userData = await response.json()
+      currentUser = userData
+      return true
     }
+
+    return false
   } catch (error) {
-    console.error("Error loading dashboard:", error)
-    // Use mock data on error
-    updateDashboardStats({
-      testsCompleted: 0,
-      averageScore: 0,
-      totalScore: 0,
-    })
+    console.error("Auth refresh failed:", error)
+    return false
   }
 }
 
-function updateDashboardStats(stats) {
-  const testsEl = document.getElementById("userTestsCompleted")
-  const avgEl = document.getElementById("userAverageScore")
-  const totalEl = document.getElementById("userTotalScore")
-
-  if (testsEl) testsEl.textContent = stats.testsCompleted || 0
-  if (avgEl) avgEl.textContent = (stats.averageScore || 0) + "%"
-  if (totalEl) totalEl.textContent = stats.totalScore || 0
-}
-
-function updateRecentResults(results) {
-  const container = document.getElementById("recentResults")
-  if (!container) return
-
-  if (!results || results.length === 0) {
-    container.innerHTML = '<div class="empty-state"><p>Результати з\'являться після проходження тестів</p></div>'
-    return
-  }
-
-  container.innerHTML = results
-    .map(
-      (result) => `
-    <div class="result-item">
-      <div class="result-info">
-        <h4>${result.quiz_title || "Тест"}</h4>
-        <div class="result-date">${new Date(result.completed_at).toLocaleDateString("uk-UA")}</div>
-      </div>
-      <div class="result-score">${result.score}%</div>
-    </div>
-  `,
-    )
-    .join("")
-}
-
-// Load Quizzes
+// Quiz functions
 async function loadQuizzes() {
-  const container = document.getElementById("quizzesList")
-  if (!container) return
-
-  container.innerHTML = '<div class="loading">Завантаження тестів...</div>'
-
   try {
-    const response = await fetch(`${API_URL}/api/quizzes`)
+    const response = await fetch("/api/quizzes")
+    quizzes = await response.json()
 
-    if (response.ok) {
-      const quizzes = await response.json()
-      displayQuizzes(quizzes)
-    } else {
-      throw new Error("Failed to load quizzes")
-    }
+    const quizzesContainer = document.getElementById("quizzesList")
+    quizzesContainer.innerHTML = quizzes
+      .map(
+        (quiz) => `
+            <div class="quiz-card" onclick="startQuiz(${quiz.id})">
+                <div class="quiz-title">${quiz.title}</div>
+                <div class="quiz-description">${quiz.description}</div>
+                <div class="quiz-meta">
+                    <span>${quiz.questionCount} питань</span>
+                    <span class="quiz-difficulty difficulty-${
+                      quiz.difficulty
+                    }">${getDifficultyText(quiz.difficulty)}</span>
+                </div>
+            </div>
+        `,
+      )
+      .join("")
   } catch (error) {
     console.error("Error loading quizzes:", error)
-    // Show mock quizzes on error
-    displayQuizzes(getMockQuizzes())
   }
-}
-
-function displayQuizzes(quizzes) {
-  const container = document.getElementById("quizzesList")
-  if (!container) return
-
-  if (quizzes.length === 0) {
-    container.innerHTML = '<div class="empty-state"><p>Немає доступних тестів</p></div>'
-    return
-  }
-
-  container.innerHTML = quizzes
-    .map(
-      (quiz) => `
-    <div class="quiz-card" onclick="startQuiz(${quiz.id})">
-      <h3 class="quiz-title">${quiz.title}</h3>
-      <p class="quiz-description">${quiz.description || "Опис відсутній"}</p>
-      <div class="quiz-meta">
-        <span>${quiz.questionCount || quiz.question_count || 0} питань</span>
-        <span class="quiz-difficulty difficulty-${quiz.difficulty}">
-          ${getDifficultyText(quiz.difficulty)}
-        </span>
-      </div>
-    </div>
-  `,
-    )
-    .join("")
 }
 
 function getDifficultyText(difficulty) {
-  const texts = {
+  const difficulties = {
     easy: "Легкий",
     medium: "Середній",
     hard: "Складний",
   }
-  return texts[difficulty] || difficulty
+  return difficulties[difficulty] || difficulty
 }
 
-function getMockQuizzes() {
-  return [
-    {
-      id: 1,
-      title: "Математика (Базовий рівень)",
-      description: "Тест з основ математики для підготовки до іспитів",
-      difficulty: "easy",
-      questionCount: 10,
-    },
-    {
-      id: 2,
-      title: "Українська мова",
-      description: "Тест з української мови та літератури",
-      difficulty: "medium",
-      questionCount: 15,
-    },
-  ]
-}
-
-// Start Quiz
 async function startQuiz(quizId) {
   try {
-    const response = await fetch(`${API_URL}/api/quizzes/${quizId}`)
+    const response = await fetch(`/api/quizzes/${quizId}`)
+    currentQuiz = await response.json()
+    currentQuestionIndex = 0
+    userAnswers = new Array(currentQuiz.questions.length).fill(null)
+    quizStartTime = new Date()
 
-    if (response.ok) {
-      currentQuiz = await response.json()
-    } else {
-      throw new Error("Failed to load quiz")
-    }
-  } catch (error) {
-    console.error("Error loading quiz:", error)
-    currentQuiz = {
-      id: quizId,
-      title: "Демонстраційний тест",
-      questions: generateMockQuestions(10),
-    }
-  }
-
-  currentQuestionIndex = 0
-  userAnswers = new Array(currentQuiz.questions.length).fill(null)
-  quizStartTime = Date.now()
-
-  const titleEl = document.getElementById("quizTitle")
-  if (titleEl) titleEl.textContent = currentQuiz.title
-
-  navigateToSection("quiz-taking")
-  displayQuestion()
-}
-
-// Generate Mock Questions
-function generateMockQuestions(count) {
-  const questions = []
-  for (let i = 0; i < count; i++) {
-    questions.push({
-      id: i + 1,
-      question: `Питання ${i + 1}: Скільки буде 2 + 2 × ${i + 1}?`,
-      options: [`${2 + 2 * (i + 1)}`, `${(2 + 2) * (i + 1)}`, `${2 * (i + 1)}`, `${4 + (i + 1)}`],
-      correct: 0,
+    // Hide all sections first
+    document.querySelectorAll(".content-section").forEach((section) => {
+      section.classList.remove("active")
     })
+
+    // Show quiz taking section
+    document.getElementById("quiz-taking").classList.add("active")
+
+    // Update navigation state
+    document.querySelectorAll(".nav-item").forEach((item) => {
+      item.classList.remove("active")
+    })
+
+    // Update quiz header
+    document.getElementById("quizTitle").textContent = currentQuiz.title
+
+    // Load first question
+    loadQuestion()
+  } catch (error) {
+    console.error("Error starting quiz:", error)
   }
-  return questions
 }
 
-// Display Question
-function displayQuestion() {
-  if (!currentQuiz || !currentQuiz.questions) return
-
+function loadQuestion() {
   const question = currentQuiz.questions[currentQuestionIndex]
-  const totalQuestions = currentQuiz.questions.length
 
   // Update progress
-  const progressPercent = ((currentQuestionIndex + 1) / totalQuestions) * 100
-  const progressFill = document.getElementById("progressFill")
-  const progressText = document.getElementById("progressText")
+  const progress = ((currentQuestionIndex + 1) / currentQuiz.questions.length) * 100
+  document.getElementById("progressFill").style.width = `${progress}%`
+  document.getElementById("progressText").textContent = `${currentQuestionIndex + 1} з ${currentQuiz.questions.length}`
 
-  if (progressFill) progressFill.style.width = progressPercent + "%"
-  if (progressText) progressText.textContent = `${currentQuestionIndex + 1} з ${totalQuestions}`
+  // Update question
+  document.getElementById("questionText").textContent = question.question
 
-  // Display question
-  const questionText = document.getElementById("questionText")
-  if (questionText) {
-    questionText.textContent = question.question || question.question_text
-  }
-
-  // Display options
+  // Update options
   const optionsContainer = document.getElementById("optionsContainer")
-  if (optionsContainer) {
-    optionsContainer.innerHTML = question.options
-      .map(
-        (option, index) => `
-      <div class="option ${userAnswers[currentQuestionIndex] === index ? "selected" : ""}" 
-           onclick="selectOption(${index})">
-        ${option}
-      </div>
+  optionsContainer.innerHTML = question.options
+    .map(
+      (option, index) => `
+        <div class="option ${userAnswers[currentQuestionIndex] === index ? "selected" : ""}" 
+             onclick="selectOption(${index})">
+            ${option}
+        </div>
     `,
-      )
-      .join("")
-  }
+    )
+    .join("")
 
-  // Update buttons
-  const prevBtn = document.getElementById("prevQuestion")
-  const nextBtn = document.getElementById("nextQuestion")
-  const submitBtn = document.getElementById("submitQuiz")
+  // Update controls
+  document.getElementById("prevQuestion").disabled = currentQuestionIndex === 0
 
-  if (prevBtn) prevBtn.disabled = currentQuestionIndex === 0
-
-  if (currentQuestionIndex === totalQuestions - 1) {
-    if (nextBtn) nextBtn.style.display = "none"
-    if (submitBtn) submitBtn.style.display = "block"
+  if (currentQuestionIndex === currentQuiz.questions.length - 1) {
+    document.getElementById("nextQuestion").style.display = "none"
+    document.getElementById("submitQuiz").style.display = "block"
   } else {
-    if (nextBtn) nextBtn.style.display = "block"
-    if (submitBtn) submitBtn.style.display = "none"
+    document.getElementById("nextQuestion").style.display = "block"
+    document.getElementById("submitQuiz").style.display = "none"
   }
 }
 
-// Select Option
 function selectOption(optionIndex) {
   userAnswers[currentQuestionIndex] = optionIndex
-  displayQuestion()
+
+  // Update UI
+  document.querySelectorAll(".option").forEach((option, index) => {
+    option.classList.toggle("selected", index === optionIndex)
+  })
 }
 
-// Previous Question
 function previousQuestion() {
   if (currentQuestionIndex > 0) {
     currentQuestionIndex--
-    displayQuestion()
+    loadQuestion()
   }
 }
 
-// Next Question
 function nextQuestion() {
   if (currentQuestionIndex < currentQuiz.questions.length - 1) {
     currentQuestionIndex++
-    displayQuestion()
+    loadQuestion()
   }
 }
 
-// Submit Quiz
+function formatTime(milliseconds) {
+  const hours = Math.floor(milliseconds / (1000 * 60 * 60))
+  const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60))
+  const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000)
+  const ms = milliseconds % 1000
+
+  let timeString = ""
+
+  if (hours > 0) {
+    timeString += `${hours} год `
+  }
+  if (minutes > 0) {
+    timeString += `${minutes} хв `
+  }
+  if (seconds > 0) {
+    timeString += `${seconds} сек `
+  }
+  if (ms > 0 || timeString === "") {
+    timeString += `${ms} мс`
+  }
+
+  return timeString.trim()
+}
+
 async function submitQuiz() {
   try {
-    const quizEndTime = Date.now()
-    const timeTakenMs = quizEndTime - quizStartTime
-    const timeTakenMinutes = Math.floor(timeTakenMs / 1000 / 60)
-
-    // Calculate results
-    let correctCount = 0
-    currentQuiz.questions.forEach((question, index) => {
-      const correctAnswer = question.correct !== undefined ? question.correct : question.correctAnswer
-      if (userAnswers[index] === correctAnswer) {
-        correctCount++
+    const unansweredQuestions = userAnswers.filter((answer) => answer === null)
+    if (unansweredQuestions.length > 0) {
+      const confirmSubmit = confirm(
+        `У вас є ${unansweredQuestions.length} незаповнених питань. Ви впевнені, що хочете завершити тест?`,
+      )
+      if (!confirmSubmit) {
+        return
       }
+    }
+
+    const quizEndTime = new Date()
+    const timeSpentMs = quizEndTime - quizStartTime
+    const timeSpentMinutes = Math.round(timeSpentMs / 1000 / 60)
+
+    const submitButton = document.getElementById("submitQuiz")
+    const originalText = submitButton.textContent
+    submitButton.textContent = "Збереження результатів..."
+    submitButton.disabled = true
+
+    const token = localStorage.getItem("token")
+    const response = await fetch(`/api/quizzes/${currentQuiz.id}/submit`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        answers: userAnswers,
+        timeSpent: timeSpentMinutes,
+      }),
     })
 
-    const totalQuestions = currentQuiz.questions.length
-    const scorePercent = Math.round((correctCount / totalQuestions) * 100)
+    if (response.status === 401 || response.status === 403) {
+      console.warn("Session expired during quiz submission")
 
-    // Save to server
-    try {
-      const response = await fetch(`${API_URL}/api/quizzes/${currentQuiz.id}/submit`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          answers: userAnswers,
-          timeSpent: timeTakenMinutes,
-        }),
-      })
+      const refreshResult = await tryRefreshAuth()
+      if (refreshResult) {
+        const retryResponse = await fetch(`/api/quizzes/${currentQuiz.id}/submit`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            answers: userAnswers,
+            timeSpent: timeSpentMinutes,
+          }),
+        })
 
-      if (!response.ok) {
-        console.warn("Failed to save results to server")
+        if (retryResponse.ok) {
+          const result = await retryResponse.json()
+          if (result.success) {
+            // Process successful submission
+            detailedResults = {
+              ...result.result,
+              timeSpent: timeSpentMinutes,
+              timeSpentMs: timeSpentMs,
+              questions: currentQuiz.questions,
+              userAnswers: userAnswers,
+              quizTitle: currentQuiz.title,
+              quizDescription: currentQuiz.description,
+              difficulty: currentQuiz.difficulty,
+              category: currentQuiz.category,
+              completedAt: new Date().toISOString(),
+              questionAnalysis: currentQuiz.questions.map((question, index) => {
+                const userAnswer = userAnswers[index]
+                const correctAnswer = question.correct
+                const isCorrect = userAnswer === correctAnswer
+
+                return {
+                  questionNumber: index + 1,
+                  question: question.question,
+                  options: question.options,
+                  userAnswer: userAnswer !== null ? question.options[userAnswer] : "Не відповів",
+                  correctAnswer: question.options[correctAnswer],
+                  isCorrect: isCorrect,
+                  userAnswerIndex: userAnswer,
+                  correctAnswerIndex: correctAnswer,
+                }
+              }),
+            }
+
+            showResults(result.result)
+            return
+          }
+        }
       }
-    } catch (error) {
-      console.warn("Error saving results:", error)
+
+      alert("Ваша сесія закінчилася під час збереження результатів. Будь ласка, увійдіть знову.")
+      localStorage.removeItem("token")
+      localStorage.removeItem("userId")
+
+      setTimeout(() => {
+        window.location.href = "/auth.html"
+      }, 3000)
+      return
     }
 
-    // Store results locally
-    quizResults = {
-      quizId: currentQuiz.id,
-      quizTitle: currentQuiz.title,
-      totalQuestions,
-      correctCount,
-      incorrectCount: totalQuestions - correctCount,
-      scorePercent,
-      timeTakenMs,
-      timeTakenMinutes,
-      answers: userAnswers,
-      questions: currentQuiz.questions,
-    }
+    const result = await response.json()
 
-    displayResults()
-    navigateToSection("quiz-results")
-    showNotification("Тест успішно завершено!", "success")
+    if (result.success) {
+      detailedResults = {
+        ...result.result,
+        timeSpent: timeSpentMinutes,
+        timeSpentMs: timeSpentMs,
+        questions: currentQuiz.questions,
+        userAnswers: userAnswers,
+        quizTitle: currentQuiz.title,
+        quizDescription: currentQuiz.description,
+        difficulty: currentQuiz.difficulty,
+        category: currentQuiz.category,
+        completedAt: new Date().toISOString(),
+        questionAnalysis: currentQuiz.questions.map((question, index) => {
+          const userAnswer = userAnswers[index]
+          const correctAnswer = question.correct
+          const isCorrect = userAnswer === correctAnswer
+
+          return {
+            questionNumber: index + 1,
+            question: question.question,
+            options: question.options,
+            userAnswer: userAnswer !== null ? question.options[userAnswer] : "Не відповів",
+            correctAnswer: question.options[correctAnswer],
+            isCorrect: isCorrect,
+            userAnswerIndex: userAnswer,
+            correctAnswerIndex: correctAnswer,
+          }
+        }),
+      }
+
+      showResults(result.result)
+    } else {
+      alert("Помилка при збереженні результатів: " + (result.error || "Невідома помилка"))
+      submitButton.textContent = originalText
+      submitButton.disabled = false
+    }
   } catch (error) {
     console.error("Error submitting quiz:", error)
-    showNotification("Помилка збереження результатів", "error")
+    alert("Помилка при збереженні результатів: " + error.message)
+    const submitButton = document.getElementById("submitQuiz")
+    submitButton.textContent = "Завершити тест Платформи Тести"
+    submitButton.disabled = false
   }
 }
 
-// Display Results
-function displayResults() {
-  if (!quizResults) return
+function showResults(result) {
+  // Show results section
+  document.getElementById("quiz-taking").classList.remove("active")
+  document.getElementById("quiz-results").classList.add("active")
 
-  const scoreEl = document.getElementById("finalScore")
-  const correctEl = document.getElementById("correctCount")
-  const totalEl = document.getElementById("totalCount")
-  const summaryEl = document.getElementById("resultsSummary")
+  document.getElementById("finalScore").textContent = `${result.score}%`
+  document.getElementById("correctCount").textContent = result.correctAnswers
+  document.getElementById("totalCount").textContent = result.totalQuestions
 
-  if (scoreEl) scoreEl.textContent = quizResults.scorePercent + "%"
-  if (correctEl) correctEl.textContent = quizResults.correctCount
-  if (totalEl) totalEl.textContent = quizResults.totalQuestions
+  const resultsContainer = document.querySelector(".results-summary")
+  const performanceFeedback = getPerformanceFeedback(result.score)
 
-  // Add performance feedback
-  if (summaryEl) {
-    const feedback = getPerformanceFeedback(quizResults.scorePercent)
-    const existingFeedback = summaryEl.querySelector(".performance-feedback")
-    if (existingFeedback) {
-      existingFeedback.remove()
-    }
-
-    const feedbackHTML = `
-      <div class="performance-feedback">
-        <div class="summary-item">
-          <span class="summary-label">Оцінка:</span>
-          <span style="color: ${feedback.color}; font-weight: 600;">${feedback.text}</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Час виконання:</span>
-          <span>${formatTime(quizResults.timeTakenMs)}</span>
-        </div>
-      </div>
-    `
-    summaryEl.insertAdjacentHTML("beforeend", feedbackHTML)
+  // Remove existing feedback if any
+  const existingFeedback = resultsContainer.querySelector(".performance-feedback")
+  if (existingFeedback) {
+    existingFeedback.remove()
   }
+
+  // Add new feedback
+  const feedbackElement = document.createElement("div")
+  feedbackElement.className = "performance-feedback"
+  feedbackElement.innerHTML = `
+    <div class="summary-item">
+      <span class="summary-label">Оцінка результату:</span>
+      <span style="color: ${performanceFeedback.color}; font-weight: 600;">${performanceFeedback.text}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Час виконання:</span>
+      <span>${formatTime(detailedResults.timeSpentMs)}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Категорія тесту:</span>
+      <span>${getCategoryName(detailedResults.category)}</span>
+    </div>
+  `
+  resultsContainer.appendChild(feedbackElement)
 }
 
 function getPerformanceFeedback(score) {
-  if (score >= 90) return { text: "Відмінно!", color: "#10b981" }
-  if (score >= 75) return { text: "Добре!", color: "#059669" }
-  if (score >= 60) return { text: "Задовільно", color: "#f59e0b" }
-  return { text: "Потребує покращення", color: "#ef4444" }
+  if (score >= 90) {
+    return {
+      text: "Відмінно! 🎉",
+      color: "#059669"
+    }
+  } else if (score >= 75) {
+    return {
+      text: "Добре! 👍",
+      color: "#10b981"
+    }
+  } else if (score >= 60) {
+    return {
+      text: "Задовільно 📚",
+      color: "#f59e0b"
+    }
+  } else if (score >= 40) {
+    return {
+      text: "Потребує покращення 📖",
+      color: "#f97316"
+    }
+  } else {
+    return {
+      text: "Рекомендуємо повторити матеріал 📝",
+      color: "#ef4444"
+    }
+  }
 }
 
-function formatTime(ms) {
-  const minutes = Math.floor(ms / 60000)
-  const seconds = Math.floor((ms % 60000) / 1000)
-  return `${minutes} хв ${seconds} сек`
-}
-
-// Show Detailed Results
 function showDetailedResults() {
-  if (!quizResults) {
-    showNotification("Немає результатів для відображення", "warning")
+  if (!detailedResults) {
+    alert("Детальні результати недоступні")
     return
   }
 
-  navigateToSection("detailed-results")
-  displayDetailedResults()
-}
+  // Hide results section and show detailed results
+  document.getElementById("quiz-results").classList.remove("active")
+  document.getElementById("detailed-results").classList.add("active")
 
-// Display Detailed Results
-function displayDetailedResults() {
-  if (!quizResults) return
+  document.getElementById("detailedScore").textContent = `${detailedResults.score}%`
+  document.getElementById("detailedCorrect").textContent = detailedResults.correctAnswers
+  document.getElementById("detailedIncorrect").textContent =
+    detailedResults.totalQuestions - detailedResults.correctAnswers
+  document.getElementById("detailedTime").textContent = formatTime(detailedResults.timeSpentMs)
 
-  const scoreEl = document.getElementById("detailedScore")
-  const correctEl = document.getElementById("detailedCorrect")
-  const incorrectEl = document.getElementById("detailedIncorrect")
-  const timeEl = document.getElementById("detailedTime")
+  const detailedHeader = document.querySelector(".detailed-header h2")
+  detailedHeader.textContent = `Детальні результати: ${detailedResults.quizTitle}`
 
-  if (scoreEl) scoreEl.textContent = quizResults.scorePercent + "%"
-  if (correctEl) correctEl.textContent = quizResults.correctCount
-  if (incorrectEl) incorrectEl.textContent = quizResults.incorrectCount
-  if (timeEl) timeEl.textContent = formatTime(quizResults.timeTakenMs)
+  const summaryStats = document.querySelector(".summary-stats")
+  summaryStats.innerHTML = `
+    <div class="stat-item">
+      <span class="stat-value">${detailedResults.score}%</span>
+      <span class="stat-label">Загальний бал</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">${detailedResults.correctAnswers}</span>
+      <span class="stat-label">Правильно</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">${detailedResults.totalQuestions - detailedResults.correctAnswers}</span>
+      <span class="stat-label">Неправильно</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">${formatTime(detailedResults.timeSpentMs)}</span>
+      <span class="stat-label">Час проходження</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">${getCategoryName(detailedResults.category)}</span>
+      <span class="stat-label">Категорія</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">${getDifficultyText(detailedResults.difficulty)}</span>
+      <span class="stat-label">Складність</span>
+    </div>
+  `
 
-  const reviewContainer = document.getElementById("questionsReview")
-  if (!reviewContainer) return
-
-  reviewContainer.innerHTML = quizResults.questions
-    .map((question, index) => {
-      const userAnswer = quizResults.answers[index]
-      const correctAnswer = question.correct !== undefined ? question.correct : question.correctAnswer
-      const isCorrect = userAnswer === correctAnswer
-      const wasAnswered = userAnswer !== null
+  const questionsReview = document.getElementById("questionsReview")
+  questionsReview.innerHTML = detailedResults.questionAnalysis
+    .map((analysis, index) => {
+      const isCorrect = analysis.isCorrect
+      const wasAnswered = analysis.userAnswerIndex !== null
 
       return `
       <div class="question-review ${isCorrect ? "correct" : "incorrect"}">
         <div class="question-header">
-          <span class="question-number">Питання ${index + 1}</span>
-          <span class="question-status ${isCorrect ? "status-correct" : wasAnswered ? "status-incorrect" : "status-no-answer"}">
+          <span class="question-number">Питання ${analysis.questionNumber}</span>
+          <span class="question-status ${
+            isCorrect ? "status-correct" : wasAnswered ? "status-incorrect" : "status-no-answer"
+          }">
             ${isCorrect ? "✓ Правильно" : wasAnswered ? "✗ Неправильно" : "⚠ Не відповів"}
           </span>
         </div>
-        <div class="question-text">${question.question || question.question_text}</div>
+        <div class="question-text">${analysis.question}</div>
         <div class="answers-review">
-          ${question.options
-            .map((option, optIndex) => {
+          ${analysis.options
+            .map((option, optionIndex) => {
               let className = "answer-option"
               let label = ""
 
-              if (optIndex === correctAnswer) {
+              if (optionIndex === analysis.correctAnswerIndex) {
                 className += " correct-answer"
-                label = "(Правильна відповідь)"
+                label = " (Правильна відповідь)"
               }
-              if (optIndex === userAnswer) {
-                if (isCorrect) {
+
+              if (optionIndex === analysis.userAnswerIndex) {
+                if (analysis.isCorrect) {
                   className += " user-correct-answer"
-                  label = "(Ваша відповідь)"
                 } else {
                   className += " user-wrong-answer"
-                  label = "(Ваша відповідь)"
+                  label = " (Ваша відповідь)"
                 }
               }
 
-              return `
-              <div class="${className}">
-                ${option} ${label ? `<span class="answer-label">${label}</span>` : ""}
-              </div>
-            `
+              return ` <
+        div class = "${className}" >
+        $ {
+          option
+        }
+      $ {
+        label
+      } <
+      /div>
+      `
             })
             .join("")}
         </div>
@@ -639,152 +802,74 @@ function displayDetailedResults() {
     .join("")
 }
 
-// Load Leaderboard
+// Leaderboard functions
 async function loadLeaderboard() {
-  const container = document.getElementById("leaderboardList")
-  if (!container) return
-
-  container.innerHTML = '<div class="loading">Завантаження рейтингу...</div>'
-
   try {
-    const response = await fetch(`${API_URL}/api/leaderboard`)
+    const response = await fetch("/api/leaderboard")
+    const leaderboard = await response.json()
 
-    if (response.ok) {
-      const leaderboard = await response.json()
-      displayLeaderboard(leaderboard)
-    } else {
-      throw new Error("Failed to load leaderboard")
-    }
+    const leaderboardContainer = document.getElementById("leaderboardList")
+    leaderboardContainer.innerHTML = leaderboard
+      .map(
+        (user, index) => `
+            <div class="leaderboard-item">
+                <div class="leaderboard-rank">${index + 1}</div>
+                <div class="leaderboard-info">
+                    <div class="leaderboard-name">${user.name || user.email}</div>
+                    <div class="leaderboard-stats">${user.testsCompleted} тестів пройдено</div>
+                </div>
+                <div class="leaderboard-score">${user.averageScore}%</div>
+            </div>
+        `,
+      )
+      .join("")
   } catch (error) {
     console.error("Error loading leaderboard:", error)
-    displayLeaderboard(getMockLeaderboard())
   }
 }
 
-function displayLeaderboard(leaderboard) {
-  const container = document.getElementById("leaderboardList")
-  if (!container) return
-
-  if (leaderboard.length === 0) {
-    container.innerHTML = '<div class="empty-state"><p>Рейтинг порожній</p></div>'
-    return
-  }
-
-  container.innerHTML = leaderboard
-    .map(
-      (user, index) => `
-    <div class="leaderboard-item">
-      <div class="leaderboard-rank">${index + 1}</div>
-      <div class="leaderboard-info">
-        <div class="leaderboard-name">${user.name || user.email}</div>
-        <div class="leaderboard-stats">${user.testsCompleted || user.tests_completed || 0} тестів пройдено</div>
-      </div>
-      <div class="leaderboard-score">${user.averageScore || user.average_score || 0}%</div>
-    </div>
-  `,
-    )
-    .join("")
-}
-
-function getMockLeaderboard() {
-  return [
-    { name: "Студент 1", testsCompleted: 5, averageScore: 85 },
-    { name: "Студент 2", testsCompleted: 3, averageScore: 78 },
-  ]
-}
-
-// Load Statistics
+// Statistics functions
 async function loadStatistics() {
   try {
-    const response = await fetch(`${API_URL}/api/stats/overview`)
+    const response = await fetch("/api/stats/overview")
+    const stats = await response.json()
 
-    if (response.ok) {
-      const stats = await response.json()
-      displayStatistics(stats)
-    } else {
-      throw new Error("Failed to load statistics")
-    }
+    // Update overview stats
+    document.getElementById("totalTestsCount").textContent = stats.totalTests
+    document.getElementById("totalUsersCount").textContent = stats.totalUsers
+    document.getElementById("averageScoreAll").textContent = `${stats.averageScore}%`
+
+    // Update category stats
+    const categoryStatsContainer = document.getElementById("categoryStats")
+    const categoryStatsHTML = Object.entries(stats.categoryStats)
+      .map(
+        ([category, data]) => `
+            <div class="category-item">
+                <div class="category-name">${getCategoryName(category)}</div>
+                <div class="category-score">${data.averageScore}% (${data.count} тестів)</div>
+            </div>
+        `,
+      )
+      .join("")
+
+    categoryStatsContainer.innerHTML = `
+            <h3>Статистика за категоріями</h3>
+            ${
+              categoryStatsHTML ||
+              '<p style="text-align: center; color: var(--text-secondary); padding: 1rem;">Немає даних</p>'
+            }
+        `
   } catch (error) {
     console.error("Error loading statistics:", error)
-    displayStatistics(getMockStatistics())
   }
-}
-
-function displayStatistics(stats) {
-  const totalTestsEl = document.getElementById("totalTestsCount")
-  const totalUsersEl = document.getElementById("totalUsersCount")
-  const avgScoreEl = document.getElementById("averageScoreAll")
-
-  if (totalTestsEl) totalTestsEl.textContent = stats.totalTests || 0
-  if (totalUsersEl) totalUsersEl.textContent = stats.totalUsers || 0
-  if (avgScoreEl) avgScoreEl.textContent = (stats.averageScore || 0) + "%"
-
-  // Category stats
-  const categoryContainer = document.getElementById("categoryStats")
-  if (!categoryContainer) return
-
-  const categoryStats = stats.categoryStats || {}
-  const categories = Object.entries(categoryStats)
-
-  if (categories.length === 0) {
-    categoryContainer.innerHTML = '<div class="empty-state"><p>Немає даних за категоріями</p></div>'
-    return
-  }
-
-  categoryContainer.innerHTML = categories
-    .map(
-      ([category, data]) => `
-    <div class="category-item">
-      <span class="category-name">${getCategoryName(category)}</span>
-      <span class="category-score">${data.averageScore || 0}% (${data.count || 0} тестів)</span>
-    </div>
-  `,
-    )
-    .join("")
 }
 
 function getCategoryName(category) {
-  const names = {
+  const categories = {
     mathematics: "Математика",
     history: "Історія",
-    ukrainian: "Українська мова",
-    english: "Англійська мова",
     science: "Наука",
+    literature: "Література",
   }
-  return names[category] || category
+  return categories[category] || category
 }
-
-function getMockStatistics() {
-  return {
-    totalTests: 0,
-    totalUsers: 0,
-    averageScore: 0,
-    categoryStats: {},
-  }
-}
-
-// Show Notification
-function showNotification(message, type = "success") {
-  const notification = document.getElementById("notification")
-  if (!notification) return
-
-  notification.textContent = message
-  notification.className = `notification ${type}`
-  notification.classList.remove("hidden")
-  notification.classList.add("show")
-
-  setTimeout(() => {
-    notification.classList.remove("show")
-    setTimeout(() => {
-      notification.classList.add("hidden")
-    }, 300)
-  }, 3000)
-}
-
-// Handle window resize
-window.addEventListener("resize", () => {
-  const sidebar = document.querySelector(".sidebar")
-  if (sidebar && window.innerWidth > 1024) {
-    sidebar.classList.remove("active")
-  }
-})
