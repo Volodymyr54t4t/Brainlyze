@@ -4,64 +4,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Updated title to use "Платформа Тести" -->
-    <title>Платформа Тести - Авторизація</title>
-    <link rel="stylesheet" href="auth.css">
+    <title>Авторизація - Платформа Тести</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="container">
-        <div class="auth-card">
-            <div class="auth-header">
-                <!-- Updated header title and description -->
-                <h1>Платформа Тести</h1>
-                <p>Система онлайн тестування та оцінювання знань</p>
+    <div
+        style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);">
+        <div
+            style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 400px; width: 100%;">
+            <h1 style="text-align: center; color: var(--primary); margin-bottom: 2rem;">🎓 Платформа Тести</h1>
+
+            <div id="loginForm">
+                <h2 style="margin-bottom: 1rem;">Вхід</h2>
+                <input type="email" id="loginEmail" placeholder="Email"
+                    style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 0.5rem;">
+                <input type="password" id="loginPassword" placeholder="Пароль"
+                    style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 0.5rem;">
+                <button onclick="login()"
+                    style="width: 100%; padding: 0.75rem; background: var(--primary); color: white; border: none; border-radius: 0.5rem; cursor: pointer; margin-bottom: 1rem;">Увійти</button>
+                <p style="text-align: center;">Немає акаунту? <a href="#" onclick="showRegister(); return false;"
+                        style="color: var(--primary);">Зареєструватись</a></p>
             </div>
 
-            <div class="auth-tabs">
-                <button class="tab-btn active" data-tab="login">Вхід</button>
-                <button class="tab-btn" data-tab="register">Реєстрація</button>
+            <div id="registerForm" style="display: none;">
+                <h2 style="margin-bottom: 1rem;">Реєстрація</h2>
+                <input type="email" id="registerEmail" placeholder="Email"
+                    style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 0.5rem;">
+                <input type="password" id="registerPassword" placeholder="Пароль (мін. 6 символів)"
+                    style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 0.5rem;">
+                <button onclick="register()"
+                    style="width: 100%; padding: 0.75rem; background: var(--secondary); color: white; border: none; border-radius: 0.5rem; cursor: pointer; margin-bottom: 1rem;">Зареєструватись</button>
+                <p style="text-align: center;">Вже є акаунт? <a href="#" onclick="showLogin(); return false;"
+                        style="color: var(--primary);">Увійти</a></p>
             </div>
 
-            <!-- Login Form -->
-            <form id="loginForm" class="auth-form active">
-                <div class="form-group">
-                    <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Пароль</label>
-                    <input type="password" id="loginPassword" name="password" required>
-                </div>
-                <button type="submit" class="auth-btn">Увійти</button>
-            </form>
-
-            <!-- Register Form -->
-            <form id="registerForm" class="auth-form">
-                <div class="form-group">
-                    <label for="registerEmail">Email</label>
-                    <input type="email" id="registerEmail" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="registerPassword">Пароль</label>
-                    <input type="password" id="registerPassword" name="password" required minlength="6">
-                </div>
-                <div class="form-group">
-                    <label for="confirmPassword">Підтвердити пароль</label>
-                    <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6">
-                </div>
-                <button type="submit" class="auth-btn">Зареєструватися</button>
-            </form>
-
-            <div class="auth-footer">
-                <p>Вже маєте акаунт? <a href="#" class="switch-link" data-tab="login">Увійти</a></p>
-                <p>Немає акаунту? <a href="#" class="switch-link" data-tab="register">Зареєструватися</a></p>
-            </div>
+            <div id="message" style="margin-top: 1rem; padding: 0.75rem; border-radius: 0.5rem; display: none;"></div>
         </div>
     </div>
 
-    <div id="message" class="message"></div>
-    <script src="auth.js"></script>
+    <script>
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+            hideMessage();
+        }
+
+        function showLogin() {
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+            hideMessage();
+        }
+
+        function showMessage(text, isError = false) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.style.display = 'block';
+            msg.style.background = isError ? '#fee2e2' : '#d1fae5';
+            msg.style.color = isError ? '#991b1b' : '#065f46';
+        }
+
+        function hideMessage() {
+            document.getElementById('message').style.display = 'none';
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showMessage('Заповніть всі поля', true);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userId', data.userId);
+                    window.location.href = '/index.html';
+                } else {
+                    showMessage(data.message || 'Помилка входу', true);
+                }
+            } catch (error) {
+                showMessage('Помилка з\'єднання з сервером', true);
+            }
+        }
+
+        async function register() {
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            if (!email || !password) {
+                showMessage('Заповніть всі поля', true);
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('Пароль повинен містити мінімум 6 символів', true);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userId', data.userId);
+                    window.location.href = '/index.html';
+                } else {
+                    showMessage(data.message || 'Помилка реєстрації', true);
+                }
+            } catch (error) {
+                showMessage('Помилка з\'єднання з сервером', true);
+            }
+        }
+
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                if (document.getElementById('loginForm').style.display !== 'none') {
+                    login();
+                } else {
+                    register();
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>

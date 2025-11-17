@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "email": "admin@nmt.gov.ua",
+    "password_hash": "default_hash",
+    "first_name": "Адмін",
+    "last_name": "Користувач",
+    "role": "admin",
+    "total_score": 0,
+    "tests_completed": 0,
+    "average_score": 0,
+    "created_at": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "email": "vova.chyzhevskyi@gmail.com",
+    "password_hash": "$2b$10$MuK/afbYetKldyEWlx.4KuA7TDH9vMyqd3DjOkwc8J0d5Kl2pyvjK",
+    "first_name": null,
+    "last_name": null,
+    "role": "student",
+    "total_score": 100,
+    "tests_completed": 1,
+    "average_score": 100,
+    "created_at": "2025-11-17T21:38:19.564Z"
+  }
+]

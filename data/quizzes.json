@@ -1,0 +1,90 @@
+[
+  {
+    "id": 1,
+    "title": "Математика - Основи",
+    "description": "Тест з основ математики",
+    "category": "mathematics",
+    "difficulty": "easy",
+    "timeLimit": 60,
+    "passingScore": 60,
+    "timesTaken": 4,
+    "averageScore": 84,
+    "isActive": true,
+    "questions": [
+      {
+        "id": 1,
+        "question": "Скільки буде 2 + 2?",
+        "options": [
+          "3",
+          "4",
+          "5",
+          "6"
+        ],
+        "correct": 1,
+        "points": 1
+      },
+      {
+        "id": 2,
+        "question": "Яка формула площі кола?",
+        "options": [
+          "πr²",
+          "2πr",
+          "πd",
+          "r²"
+        ],
+        "correct": 0,
+        "points": 1
+      },
+      {
+        "id": 3,
+        "question": "Скільки градусів у прямому куті?",
+        "options": [
+          "45°",
+          "60°",
+          "90°",
+          "180°"
+        ],
+        "correct": 2,
+        "points": 1
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Історія України",
+    "description": "Тест з історії України",
+    "category": "history",
+    "difficulty": "medium",
+    "timeLimit": 60,
+    "passingScore": 60,
+    "timesTaken": 1,
+    "averageScore": 50,
+    "isActive": true,
+    "questions": [
+      {
+        "id": 1,
+        "question": "В якому році Україна отримала незалежність?",
+        "options": [
+          "1990",
+          "1991",
+          "1992",
+          "1993"
+        ],
+        "correct": 1,
+        "points": 1
+      },
+      {
+        "id": 2,
+        "question": "Хто був першим президентом України?",
+        "options": [
+          "Леонід Кравчук",
+          "Леонід Кучма",
+          "Віктор Ющенко",
+          "Петро Порошенко"
+        ],
+        "correct": 0,
+        "points": 1
+      }
+    ]
+  }
+]
