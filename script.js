@@ -9,6 +9,9 @@ let detailedResults = null;
 const authCheckTimeout = null;
 let lastAuthCheck = 0;
 const AUTH_CHECK_COOLDOWN = 5000; // 5 seconds cooldown between auth checks
+let quizTimer = null;
+let timeRemaining = 0;
+let isTimeUp = false;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
@@ -257,6 +260,11 @@ async function startQuiz(quizId) {
 
         navigateToSection('quiz-taking');
         document.getElementById('quizTitle').textContent = currentQuiz.title;
+        
+        isTimeUp = false;
+        timeRemaining = (currentQuiz.timeLimit || 30) * 60; // конвертуємо хвилини в секунди
+        
+        startTimer();
         loadQuestion();
     } catch (error) {
         console.error('Error starting quiz:', error);
@@ -264,12 +272,83 @@ async function startQuiz(quizId) {
     }
 }
 
+function startTimer() {
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timerBar = document.getElementById('timerBar');
+    const totalTime = timeRemaining;
+    
+    if (quizTimer) {
+        clearInterval(quizTimer);
+    }
+    
+    quizTimer = setInterval(() => {
+        if (isTimeUp) {
+            clearInterval(quizTimer);
+            return;
+        }
+        
+        timeRemaining--;
+        
+        // Оновлення відображення таймера
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        timerDisplay.textContent = `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Оновлення прогрес-бару
+        const percentage = (timeRemaining / totalTime) * 100;
+        timerBar.style.width = `${percentage}%`;
+        
+        // Змінюємо колір в залежності від часу
+        if (percentage > 50) {
+            timerBar.style.background = 'linear-gradient(to right, #10b981, #059669)';
+            timerDisplay.style.color = '#059669';
+        } else if (percentage > 25) {
+            timerBar.style.background = 'linear-gradient(to right, #f59e0b, #d97706)';
+            timerDisplay.style.color = '#f59e0b';
+        } else {
+            timerBar.style.background = 'linear-gradient(to right, #ef4444, #dc2626)';
+            timerDisplay.style.color = '#ef4444';
+            // Додаємо пульсацію коли мало часу
+            timerDisplay.style.animation = 'pulse 1s infinite';
+        }
+        
+        // Коли час закінчується
+        if (timeRemaining <= 0) {
+            timeIsUp();
+        }
+    }, 1000);
+}
+
+function timeIsUp() {
+    isTimeUp = true;
+    clearInterval(quizTimer);
+    
+    // Показуємо червоний напівпрозорий екран
+    const overlay = document.createElement('div');
+    overlay.id = 'timeUpOverlay';
+    overlay.innerHTML = `
+        <div class="time-up-content">
+            <div class="time-up-icon">⏰</div>
+            <h2>Час закінчився!</h2>
+            <p>Ваш тест автоматично завершено</p>
+            <p class="time-up-info">Перевіряємо ваші відповіді...</p>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    // Автоматично подаємо тест через 2 секунди
+    setTimeout(() => {
+        submitQuiz();
+        document.body.removeChild(overlay);
+    }, 2000);
+}
+
 function loadQuestion() {
     const question = currentQuiz.questions[currentQuestionIndex];
     
     const progress = ((currentQuestionIndex + 1) / currentQuiz.questions.length) * 100;
     document.getElementById('progressFill').style.width = `${progress}%`;
-    document.getElementById('progressText').textContent = `${currentQuestionIndex + 1} з ${currentQuiz.questions.length}`;
+    document.getElementById('progressText').textContent = `Питання ${currentQuestionIndex + 1} з ${currentQuiz.questions.length}`;
     
     document.getElementById('questionText').textContent = question.question;
     
@@ -277,7 +356,8 @@ function loadQuestion() {
     optionsContainer.innerHTML = question.options.map((option, index) => `
         <div class="option ${userAnswers[currentQuestionIndex] === index ? 'selected' : ''}" 
              onclick="selectOption(${index})">
-            ${option}
+            <span class="option-letter">${String.fromCharCode(65 + index)}.</span>
+            <span class="option-text">${option}</span>
         </div>
     `).join('');
     
@@ -314,6 +394,10 @@ function nextQuestion() {
 }
 
 async function submitQuiz() {
+    if (quizTimer) {
+        clearInterval(quizTimer);
+    }
+    
     try {
         const timeSpent = Math.round((new Date() - quizStartTime) / 1000 / 60);
         const token = localStorage.getItem('token');
@@ -326,7 +410,8 @@ async function submitQuiz() {
             },
             body: JSON.stringify({
                 answers: userAnswers,
-                timeSpent: timeSpent
+                timeSpent: timeSpent,
+                wasTimedOut: isTimeUp
             })
         });
 
@@ -336,7 +421,10 @@ async function submitQuiz() {
             detailedResults = {
                 ...result.result,
                 questions: currentQuiz.questions,
-                userAnswers: userAnswers
+                userAnswers: userAnswers,
+                wasTimedOut: isTimeUp,
+                timeLimit: currentQuiz.timeLimit,
+                actualTime: timeSpent
             };
             showResults(result.result);
         }
@@ -348,9 +436,48 @@ async function submitQuiz() {
 
 function showResults(result) {
     navigateToSection('quiz-results');
-    document.getElementById('finalScore').textContent = `${result.score}%`;
+    
+    const scoreElement = document.getElementById('finalScore');
+    scoreElement.textContent = `${result.score}%`;
+    
+    const scoreCircle = document.querySelector('.score-circle');
+    if (result.score >= 80) {
+        scoreCircle.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        scoreElement.style.animation = 'celebrate 0.5s ease';
+    } else if (result.score >= 60) {
+        scoreCircle.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+    } else {
+        scoreCircle.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+    }
+    
     document.getElementById('correctCount').textContent = result.correctAnswers;
     document.getElementById('totalCount').textContent = result.totalQuestions;
+    
+    const message = getMotivationalMessage(result.score);
+    const resultsContainer = document.querySelector('.results-container');
+    const existingMessage = resultsContainer.querySelector('.motivational-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    const messageEl = document.createElement('div');
+    messageEl.className = 'motivational-message';
+    messageEl.innerHTML = `<p>${message}</p>`;
+    resultsContainer.insertBefore(messageEl, resultsContainer.querySelector('.results-summary'));
+}
+
+function getMotivationalMessage(score) {
+    if (score >= 90) {
+        return '🎉 Вітаємо! Відмінний результат! Ви справжній експерт!';
+    } else if (score >= 80) {
+        return '⭐ Чудова робота! Ви на правильному шляху!';
+    } else if (score >= 70) {
+        return '👍 Добре! Ще трохи практики і буде ідеально!';
+    } else if (score >= 60) {
+        return '📚 Непогано! Варто повторити матеріал для кращого результату.';
+    } else {
+        return '💪 Не здавайтеся! Кожна спроба робить вас сильнішими!';
+    }
 }
 
 function showDetailedResults() {
@@ -360,7 +487,46 @@ function showDetailedResults() {
     document.getElementById('detailedScore').textContent = `${detailedResults.score}%`;
     document.getElementById('detailedCorrect').textContent = detailedResults.correctAnswers;
     document.getElementById('detailedIncorrect').textContent = detailedResults.totalQuestions - detailedResults.correctAnswers;
-    document.getElementById('detailedTime').textContent = `${detailedResults.timeSpent} хв`;
+    document.getElementById('detailedTime').textContent = `${detailedResults.actualTime} / ${detailedResults.timeLimit} хв`;
+    
+    const reviewContainer = document.getElementById('questionsReview');
+    reviewContainer.innerHTML = '<h3>Перегляд відповідей</h3>' + detailedResults.questions.map((question, index) => {
+        const userAnswer = detailedResults.userAnswers[index];
+        const isCorrect = userAnswer === question.correct;
+        const wasAnswered = userAnswer !== null;
+        
+        return `
+            <div class="question-review ${isCorrect ? 'correct' : wasAnswered ? 'incorrect' : 'unanswered'}">
+                <div class="question-review-header">
+                    <span class="question-number">Питання ${index + 1}</span>
+                    <span class="question-status">
+                        ${isCorrect ? '✅ Правильно' : wasAnswered ? '❌ Неправильно' : '⚠️ Не відповіли'}
+                    </span>
+                </div>
+                <p class="question-review-text">${question.question}</p>
+                <div class="question-review-options">
+                    ${question.options.map((option, optIndex) => {
+                        let className = 'review-option';
+                        if (optIndex === question.correct) {
+                            className += ' correct-answer';
+                        }
+                        if (optIndex === userAnswer && !isCorrect) {
+                            className += ' user-wrong-answer';
+                        }
+                        return `
+                            <div class="${className}">
+                                <span class="option-letter">${String.fromCharCode(65 + optIndex)}.</span>
+                                <span>${option}</span>
+                                ${optIndex === question.correct ? '<span class="badge-correct">✓ Правильна відповідь</span>' : ''}
+                                ${optIndex === userAnswer && !isCorrect ? '<span class="badge-wrong">✗ Ваша відповідь</span>' : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                ${!wasAnswered ? '<p class="not-answered-note">⚠️ Ви не відповіли на це питання</p>' : ''}
+            </div>
+        `;
+    }).join('');
 }
 
 async function loadLeaderboard() {

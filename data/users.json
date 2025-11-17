@@ -18,9 +18,9 @@
     "first_name": null,
     "last_name": null,
     "role": "student",
-    "total_score": 100,
-    "tests_completed": 1,
-    "average_score": 100,
+    "total_score": 460,
+    "tests_completed": 6,
+    "average_score": 77,
     "created_at": "2025-11-17T21:38:19.564Z"
   }
 ]

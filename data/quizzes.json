@@ -2,13 +2,13 @@
   {
     "id": 1,
     "title": "Математика - Основи",
-    "description": "Тест з основ математики",
+    "description": "Тест з основ математики для початківців",
     "category": "mathematics",
     "difficulty": "easy",
-    "timeLimit": 60,
+    "timeLimit": 30,
     "passingScore": 60,
-    "timesTaken": 4,
-    "averageScore": 84,
+    "timesTaken": 1,
+    "averageScore": 87,
     "isActive": true,
     "questions": [
       {
@@ -46,19 +46,117 @@
         ],
         "correct": 2,
         "points": 1
+      },
+      {
+        "id": 4,
+        "question": "Чому дорівнює √16?",
+        "options": [
+          "2",
+          "4",
+          "6",
+          "8"
+        ],
+        "correct": 1,
+        "points": 1
+      },
+      {
+        "id": 5,
+        "question": "Скільки сторін у п'ятикутника?",
+        "options": [
+          "4",
+          "5",
+          "6",
+          "7"
+        ],
+        "correct": 1,
+        "points": 1
       }
     ]
   },
   {
     "id": 2,
+    "title": "Математика - Алгебра",
+    "description": "Тест з алгебри для середнього рівня",
+    "category": "mathematics",
+    "difficulty": "medium",
+    "timeLimit": 45,
+    "passingScore": 70,
+    "timesTaken": 0,
+    "averageScore": 0,
+    "isActive": true,
+    "questions": [
+      {
+        "id": 1,
+        "question": "Розв'яжіть рівняння: 2x + 5 = 13",
+        "options": [
+          "x = 3",
+          "x = 4",
+          "x = 5",
+          "x = 6"
+        ],
+        "correct": 1,
+        "points": 2
+      },
+      {
+        "id": 2,
+        "question": "Чому дорівнює (a + b)²?",
+        "options": [
+          "a² + b²",
+          "a² + 2ab + b²",
+          "a² - b²",
+          "2a + 2b"
+        ],
+        "correct": 1,
+        "points": 2
+      },
+      {
+        "id": 3,
+        "question": "Знайдіть корені рівняння: x² - 5x + 6 = 0",
+        "options": [
+          "x = 1, x = 6",
+          "x = 2, x = 3",
+          "x = -2, x = -3",
+          "x = 0, x = 5"
+        ],
+        "correct": 1,
+        "points": 2
+      },
+      {
+        "id": 4,
+        "question": "Спростіть вираз: 3(2x - 4) + 5",
+        "options": [
+          "6x - 7",
+          "6x - 12",
+          "6x + 1",
+          "6x - 1"
+        ],
+        "correct": 0,
+        "points": 2
+      },
+      {
+        "id": 5,
+        "question": "Яка властивість множення?",
+        "options": [
+          "Комутативна",
+          "Асоціативна",
+          "Дистрибутивна",
+          "Всі вище перелічені"
+        ],
+        "correct": 3,
+        "points": 2
+      }
+    ]
+  },
+  {
+    "id": 3,
     "title": "Історія України",
-    "description": "Тест з історії України",
+    "description": "Тест з історії України - ключові події",
     "category": "history",
     "difficulty": "medium",
-    "timeLimit": 60,
-    "passingScore": 60,
-    "timesTaken": 1,
-    "averageScore": 50,
+    "timeLimit": 40,
+    "passingScore": 65,
+    "timesTaken": 0,
+    "averageScore": 0,
     "isActive": true,
     "questions": [
       {
@@ -71,7 +169,7 @@
           "1993"
         ],
         "correct": 1,
-        "points": 1
+        "points": 2
       },
       {
         "id": 2,
@@ -83,7 +181,709 @@
           "Петро Порошенко"
         ],
         "correct": 0,
+        "points": 2
+      },
+      {
+        "id": 3,
+        "question": "В якому році відбулася Помаранчева революція?",
+        "options": [
+          "2000",
+          "2004",
+          "2008",
+          "2014"
+        ],
+        "correct": 1,
+        "points": 2
+      },
+      {
+        "id": 4,
+        "question": "Хто написав національний гімн України?",
+        "options": [
+          "Тарас Шевченко",
+          "Михайло Вербицький",
+          "Павло Чубинський",
+          "Леся Українка"
+        ],
+        "correct": 2,
+        "points": 2
+      },
+      {
+        "id": 5,
+        "question": "Коли відбулася Київська Русь?",
+        "options": [
+          "VIII-IX ст.",
+          "IX-XIII ст.",
+          "X-XIV ст.",
+          "XI-XV ст."
+        ],
+        "correct": 1,
+        "points": 2
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Українська мова",
+    "description": "Тест з правопису та граматики української мови",
+    "category": "language",
+    "difficulty": "easy",
+    "timeLimit": 30,
+    "passingScore": 60,
+    "timesTaken": 0,
+    "averageScore": 0,
+    "isActive": true,
+    "questions": [
+      {
+        "id": 1,
+        "question": "Яке слово написано правильно?",
+        "options": [
+          "Здоров'я",
+          "Здоровя",
+          "Здоровья",
+          "Здоровйа"
+        ],
+        "correct": 0,
         "points": 1
+      },
+      {
+        "id": 2,
+        "question": "Скільки букв у українському алфавіті?",
+        "options": [
+          "30",
+          "31",
+          "32",
+          "33"
+        ],
+        "correct": 3,
+        "points": 1
+      },
+      {
+        "id": 3,
+        "question": "Яка частина мови слово 'швидко'?",
+        "options": [
+          "Прикметник",
+          "Прислівник",
+          "Дієслово",
+          "Іменник"
+        ],
+        "correct": 1,
+        "points": 1
+      },
+      {
+        "id": 4,
+        "question": "Де ставиться апостроф?",
+        "options": [
+          "Після голосного",
+          "Перед я, ю, є, ї після приголосного",
+          "Завжди після м'якого знаку",
+          "Ніде не ставиться"
+        ],
+        "correct": 1,
+        "points": 1
+      },
+      {
+        "id": 5,
+        "question": "Яке речення правильне?",
+        "options": [
+          "Я йду в школу",
+          "Я іду в школу",
+          "Я хожу в школу",
+          "Я піду в школу"
+        ],
+        "correct": 0,
+        "points": 1
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "title": "Географія України",
+    "description": "Тест з географії та природи України",
+    "category": "geography",
+    "difficulty": "medium",
+    "timeLimit": 35,
+    "passingScore": 65,
+    "timesTaken": 0,
+    "averageScore": 0,
+    "isActive": true,
+    "questions": [
+      {
+        "id": 1,
+        "question": "Яка найвища гора в Україні?",
+        "options": [
+          "Говерла",
+          "Петрос",
+          "Піп Іван",
+          "Чорногора"
+        ],
+        "correct": 0,
+        "points": 2
+      },
+      {
+        "id": 2,
+        "question": "Яка найдовша ріка в Україні?",
+        "options": [
+          "Дунай",
+          "Дніпро",
+          "Дністер",
+          "Південний Буг"
+        ],
+        "correct": 1,
+        "points": 2
+      },
+      {
+        "id": 3,
+        "question": "Скільки областей в Україні?",
+        "options": [
+          "22",
+          "24",
+          "25",
+          "27"
+        ],
+        "correct": 2,
+        "points": 2
+      },
+      {
+        "id": 4,
+        "question": "Яке море омиває Україну з півдня?",
+        "options": [
+          "Балтійське",
+          "Чорне",
+          "Азовське",
+          "Середземне"
+        ],
+        "correct": 1,
+        "points": 2
+      },
+      {
+        "id": 5,
+        "question": "Столиця України?",
+        "options": [
+          "Львів",
+          "Харків",
+          "Київ",
+          "Одеса"
+        ],
+        "correct": 2,
+        "points": 2
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "title": "Фізика - Механіка",
+    "description": "Основи механіки та закони руху",
+    "category": "physics",
+    "difficulty": "hard",
+    "timeLimit": 50,
+    "passingScore": 75,
+    "timesTaken": 1,
+    "averageScore": 40,
+    "isActive": true,
+    "questions": [
+      {
+        "id": 1,
+        "question": "Перший закон Ньютона це...",
+        "options": [
+          "F = ma",
+          "Закон інерції",
+          "Дія дорівнює протидії",
+          "E = mc²"
+        ],
+        "correct": 1,
+        "points": 3
+      },
+      {
+        "id": 2,
+        "question": "Одиниця вимірювання сили в SI?",
+        "options": [
+          "Джоуль",
+          "Ньютон",
+          "Ват",
+          "Паскаль"
+        ],
+        "correct": 1,
+        "points": 3
+      },
+      {
+        "id": 3,
+        "question": "Формула кінетичної енергії?",
+        "options": [
+          "mgh",
+          "mv²/2",
+          "Ft",
+          "ma"
+        ],
+        "correct": 1,
+        "points": 3
+      },
+      {
+        "id": 4,
+        "question": "Прискорення вільного падіння на Землі?",
+        "options": [
+          "8.8 м/с²",
+          "9.8 м/с²",
+          "10.8 м/с²",
+          "11.8 м/с²"
+        ],
+        "correct": 1,
+        "points": 3
+      },
+      {
+        "id": 5,
+        "question": "Що таке імпульс?",
+        "options": [
+          "Сила × час",
+          "Маса × швидкість",
+          "Прискорення × час",
+          "Робота × сила"
+        ],
+        "correct": 1,
+        "points": 3
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "title": "Хімія - Періодична таблиця",
+    "description": "Тест на знання хімічних елементів",
+    "category": "chemistry",
+    "difficulty": "medium",
+    "timeLimit": 35,
+    "passingScore": 70,
+    "timesTaken": 1,
+    "averageScore": 40,
+    "isActive": true,
+    "questions": [
+      {
+        "id": 1,
+        "question": "Символ кисню в періодичній таблиці?",
+        "options": [
+          "O",
+          "Ox",
+          "Oy",
+          "K"
+        ],
+        "correct": 0,
+        "points": 2
+      },
+      {
+        "id": 2,
+        "question": "Скільки елементів у першому періоді?",
+        "options": [
+          "1",
+          "2",
+          "8",
+          "18"
+        ],
+        "correct": 1,
+        "points": 2
+      },
+      {
+        "id": 3,
+        "question": "Який елемент має символ Au?",
+        "options": [
+          "Срібло",
+          "Золото",
+          "Алюміній",
+          "Аргон"
+        ],
+        "correct": 1,
+        "points": 2
+      },
+      {
+        "id": 4,
+        "question": "Формула води?",
+        "options": [
+          "H₂O",
+          "HO₂",
+          "H₃O",
+          "HO"
+        ],
+        "correct": 0,
+        "points": 2
+      },
+      {
+        "id": 5,
+        "question": "Який газ найбільш поширений в атмосфері?",
+        "options": [
+          "Кисень",
+          "Азот",
+          "Водень",
+          "Вуглекислий газ"
+        ],
+        "correct": 1,
+        "points": 2
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "title": "Біологія - Людина",
+    "description": "Анатомія та фізіологія людини",
+    "category": "biology",
+    "difficulty": "medium",
+    "timeLimit": 40,
+    "passingScore": 65,
+    "timesTaken": 0,
+    "averageScore": 0,
+    "isActive": true,
+    "questions": [
+      {
+        "id": 1,
+        "question": "Скільки кісток у дорослої людини?",
+        "options": [
+          "186",
+          "196",
+          "206",
+          "216"
+        ],
+        "correct": 2,
+        "points": 2
+      },
+      {
+        "id": 2,
+        "question": "Який орган виробляє інсулін?",
+        "options": [
+          "Печінка",
+          "Нирки",
+          "Підшлункова залоза",
+          "Селезінка"
+        ],
+        "correct": 2,
+        "points": 2
+      },
+      {
+        "id": 3,
+        "question": "Скільки камер у серці людини?",
+        "options": [
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "correct": 2,
+        "points": 2
+      },
+      {
+        "id": 4,
+        "question": "Найбільший орган людини?",
+        "options": [
+          "Печінка",
+          "Шкіра",
+          "Мозок",
+          "Легені"
+        ],
+        "correct": 1,
+        "points": 2
+      },
+      {
+        "id": 5,
+        "question": "Група крові, яка є універсальним донором?",
+        "options": [
+          "A+",
+          "B+",
+          "AB+",
+          "O-"
+        ],
+        "correct": 3,
+        "points": 2
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "title": "Інформатика - Програмування",
+    "description": "Основи програмування та алгоритми",
+    "category": "informatics",
+    "difficulty": "hard",
+    "timeLimit": 45,
+    "passingScore": 75,
+    "timesTaken": 0,
+    "averageScore": 0,
+    "isActive": true,
+    "questions": [
+      {
+        "id": 1,
+        "question": "Що таке змінна в програмуванні?",
+        "options": [
+          "Константа",
+          "Область пам'яті для зберігання даних",
+          "Функція",
+          "Цикл"
+        ],
+        "correct": 1,
+        "points": 3
+      },
+      {
+        "id": 2,
+        "question": "Яка структура даних працює за принципом LIFO?",
+        "options": [
+          "Черга",
+          "Стек",
+          "Список",
+          "Дерево"
+        ],
+        "correct": 1,
+        "points": 3
+      },
+      {
+        "id": 3,
+        "question": "Складність алгоритму бінарного пошуку?",
+        "options": [
+          "O(n)",
+          "O(log n)",
+          "O(n²)",
+          "O(1)"
+        ],
+        "correct": 1,
+        "points": 3
+      },
+      {
+        "id": 4,
+        "question": "Що означає ООП?",
+        "options": [
+          "Об'єктно-орієнтоване програмування",
+          "Оптимізоване обчислення процесів",
+          "Основи обробки програм",
+          "Операційна організація пам'яті"
+        ],
+        "correct": 0,
+        "points": 3
+      },
+      {
+        "id": 5,
+        "question": "HTML розшифровується як?",
+        "options": [
+          "High Text Markup Language",
+          "Hyper Text Markup Language",
+          "Home Tool Markup Language",
+          "Hyperlinks and Text Markup Language"
+        ],
+        "correct": 1,
+        "points": 3
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "title": "Англійська мова - Граматика",
+    "description": "Тест на знання граматики англійської мови",
+    "category": "english",
+    "difficulty": "easy",
+    "timeLimit": 30,
+    "passingScore": 60,
+    "timesTaken": 1,
+    "averageScore": 80,
+    "isActive": true,
+    "questions": [
+      {
+        "id": 1,
+        "question": "Choose the correct form: I ___ to school every day.",
+        "options": [
+          "go",
+          "goes",
+          "going",
+          "gone"
+        ],
+        "correct": 0,
+        "points": 1
+      },
+      {
+        "id": 2,
+        "question": "What is the past tense of 'write'?",
+        "options": [
+          "writed",
+          "wrote",
+          "written",
+          "writing"
+        ],
+        "correct": 1,
+        "points": 1
+      },
+      {
+        "id": 3,
+        "question": "She ___ a book now.",
+        "options": [
+          "read",
+          "reads",
+          "is reading",
+          "reading"
+        ],
+        "correct": 2,
+        "points": 1
+      },
+      {
+        "id": 4,
+        "question": "How many articles are in English?",
+        "options": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "correct": 2,
+        "points": 1
+      },
+      {
+        "id": 5,
+        "question": "Choose the correct sentence:",
+        "options": [
+          "He don't like pizza",
+          "He doesn't like pizza",
+          "He not like pizza",
+          "He isn't like pizza"
+        ],
+        "correct": 1,
+        "points": 1
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "title": "Література - Українські письменники",
+    "description": "Тест на знання української літератури",
+    "category": "literature",
+    "difficulty": "medium",
+    "timeLimit": 35,
+    "passingScore": 70,
+    "timesTaken": 0,
+    "averageScore": 0,
+    "isActive": true,
+    "questions": [
+      {
+        "id": 1,
+        "question": "Хто написав 'Кобзар'?",
+        "options": [
+          "Іван Франко",
+          "Тарас Шевченко",
+          "Леся Українка",
+          "Панас Мирний"
+        ],
+        "correct": 1,
+        "points": 2
+      },
+      {
+        "id": 2,
+        "question": "Автор твору 'Лісова пісня'?",
+        "options": [
+          "Тарас Шевченко",
+          "Михайло Коцюбинський",
+          "Леся Українка",
+          "Іван Котляревський"
+        ],
+        "correct": 2,
+        "points": 2
+      },
+      {
+        "id": 3,
+        "question": "Хто написав 'Енеїду'?",
+        "options": [
+          "Іван Котляревський",
+          "Григорій Сковорода",
+          "Тарас Шевченко",
+          "Іван Франко"
+        ],
+        "correct": 0,
+        "points": 2
+      },
+      {
+        "id": 4,
+        "question": "Твір 'Захар Беркут' написав?",
+        "options": [
+          "Тарас Шевченко",
+          "Іван Франко",
+          "Панас Мирний",
+          "Михайло Коцюбинський"
+        ],
+        "correct": 1,
+        "points": 2
+      },
+      {
+        "id": 5,
+        "question": "Який жанр твору 'Кайдашева сім'я'?",
+        "options": [
+          "Роман",
+          "Повість",
+          "Оповідання",
+          "Драма"
+        ],
+        "correct": 1,
+        "points": 2
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "title": "Економіка - Основи",
+    "description": "Базові поняття економіки",
+    "category": "economics",
+    "difficulty": "medium",
+    "timeLimit": 40,
+    "passingScore": 65,
+    "timesTaken": 0,
+    "averageScore": 0,
+    "isActive": true,
+    "questions": [
+      {
+        "id": 1,
+        "question": "Що таке інфляція?",
+        "options": [
+          "Зростання цін",
+          "Падіння цін",
+          "Стабільність цін",
+          "Відсутність грошей"
+        ],
+        "correct": 0,
+        "points": 2
+      },
+      {
+        "id": 2,
+        "question": "ВВП розшифровується як?",
+        "options": [
+          "Валовий внутрішній продукт",
+          "Великий внутрішній прибуток",
+          "Валютний внутрішній показник",
+          "Вартісний ввезений продукт"
+        ],
+        "correct": 0,
+        "points": 2
+      },
+      {
+        "id": 3,
+        "question": "Який тип ринку має багато продавців?",
+        "options": [
+          "Монополія",
+          "Олігополія",
+          "Досконала конкуренція",
+          "Монопсонія"
+        ],
+        "correct": 2,
+        "points": 2
+      },
+      {
+        "id": 4,
+        "question": "Що таке попит?",
+        "options": [
+          "Бажання купити товар",
+          "Можливість купити товар",
+          "Бажання та можливість купити товар",
+          "Ціна товару"
+        ],
+        "correct": 2,
+        "points": 2
+      },
+      {
+        "id": 5,
+        "question": "Національна валюта України?",
+        "options": [
+          "Рубль",
+          "Долар",
+          "Гривня",
+          "Євро"
+        ],
+        "correct": 2,
+        "points": 2
       }
     ]
   }
