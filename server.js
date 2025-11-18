@@ -9,6 +9,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(express.json());
 app.use(express.static('.'));
 
@@ -617,7 +627,9 @@ app.get('/api/stats/overview', async (req, res) => {
     const totalTests = results.length;
     const totalUsers = users.filter(u => u.role !== 'admin').length;
     const totalScore = results.reduce((sum, r) => sum + r.score, 0);
-    const averageScore = totalTests > 0 ? Math.round(totalScore / totalTests) : 0;
+    const averageScore = totalTests > 0 ?
+      Math.round(totalScore / totalTests) :
+      0;
 
     // Category stats
     const categoryStats = {};

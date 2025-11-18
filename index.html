@@ -39,9 +39,26 @@
                     <span class="nav-icon">📈</span>
                     <span>Статистика</span>
                 </button>
+                <!-- Додано розділ Профіль -->
+                <button class="nav-item" data-section="profile">
+                    <span class="nav-icon">👤</span>
+                    <span>Профіль</span>
+                </button>
+                <!-- Додано розділ налаштувань -->
+                <button class="nav-item" data-section="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Налаштування</span>
+                </button>
             </nav>
 
             <div class="user-info">
+                <!-- Додано відображення рівня користувача -->
+                <div id="userLevelDisplay" class="user-level-display"></div>
+
+                <!-- Додано streak counter -->
+                <div id="streakCounter" class="streak-display" style="display: none;">
+                    🔥 0 днів поспіль
+                </div>
                 <div class="user-card">
                     <div class="user-avatar">👤</div>
                     <div class="user-details">
@@ -49,7 +66,6 @@
                         <div class="user-role" id="currentUserRole">student</div>
                     </div>
                 </div>
-                <!-- Додано кнопку виходу -->
                 <button id="logoutBtn" class="logout-btn">
                     🚪 Вийти
                 </button>
@@ -103,6 +119,21 @@
                     <h2>Тести платформи</h2>
                     <p>Оберіть тест для проходження та покращення своїх результатів</p>
                 </div>
+
+                <!-- Додано фільтри та пошук -->
+                <div class="quiz-filters">
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="all">Всі тести</button>
+                        <button class="filter-btn" data-filter="favorites">❤️ Улюблені</button>
+                        <button class="filter-btn" data-filter="easy">Легкі</button>
+                        <button class="filter-btn" data-filter="medium">Середні</button>
+                        <button class="filter-btn" data-filter="hard">Складні</button>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="quizSearch" class="search-input" placeholder="🔍 Пошук тестів...">
+                    </div>
+                </div>
+
                 <div id="quizzesList" class="quizzes-grid"></div>
             </section>
 
@@ -111,7 +142,6 @@
                 <div class="quiz-container">
                     <div class="quiz-header">
                         <h2 id="quizTitle"></h2>
-                        <!-- Додано таймер -->
                         <div class="timer-container">
                             <div class="timer-display" id="timerDisplay">⏱️ 0:00</div>
                             <div class="timer-bar-container">
@@ -186,7 +216,6 @@
                             <span class="stat-label">Час</span>
                         </div>
                     </div>
-                    <!-- Додано контейнер для детального перегляду -->
                     <div id="questionsReview" class="questions-review"></div>
                 </div>
             </section>
@@ -223,6 +252,227 @@
                         </div>
                     </div>
                     <div id="categoryStats" class="category-stats"></div>
+                </div>
+            </section>
+
+            <!-- Додано секцію профілю -->
+            <section id="profile" class="content-section">
+                <div class="section-header">
+                    <h2>Мій профіль</h2>
+                    <p>Керуйте своєю особистою інформацією та налаштуваннями</p>
+                </div>
+
+                <div class="profile-container">
+                    <div class="profile-sidebar">
+                        <div class="profile-avatar-section">
+                            <div class="profile-avatar-large" id="profileAvatarLarge">
+                                <span class="avatar-letter" id="avatarLetter">У</span>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="changeAvatar()">
+                                Змінити аватар
+                            </button>
+                        </div>
+
+                        <div class="profile-stats-card">
+                            <h3>Статистика</h3>
+                            <div class="profile-stat-item">
+                                <span class="stat-label">Рівень</span>
+                                <span class="stat-value" id="profileLevel">1</span>
+                            </div>
+                            <div class="profile-stat-item">
+                                <span class="stat-label">Загальний XP</span>
+                                <span class="stat-value" id="profileTotalXP">0</span>
+                            </div>
+                            <div class="profile-stat-item">
+                                <span class="stat-label">Пройдено тестів</span>
+                                <span class="stat-value" id="profileTestsCompleted">0</span>
+                            </div>
+                            <div class="profile-stat-item">
+                                <span class="stat-label">Середній бал</span>
+                                <span class="stat-value" id="profileAvgScore">0%</span>
+                            </div>
+                            <div class="profile-stat-item">
+                                <span class="stat-label">Streak</span>
+                                <span class="stat-value" id="profileStreak">🔥 0 днів</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-achievements-preview">
+                            <h3>Досягнення</h3>
+                            <div id="profileAchievementsPreview" class="achievements-preview-grid">
+                                <!-- Achievements будуть додані динамічно -->
+                            </div>
+                            <button class="btn btn-secondary btn-block" onclick="showAchievements()">
+                                Всі досягнення
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="profile-main">
+                        <div class="profile-section">
+                            <div class="profile-section-header">
+                                <h3>Особиста інформація</h3>
+                                <button class="btn btn-primary btn-sm" id="editProfileBtn" onclick="toggleEditMode()">
+                                    Редагувати
+                                </button>
+                            </div>
+
+                            <form id="profileForm" class="profile-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Ім'я</label>
+                                        <input type="text" id="firstName" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Прізвище</label>
+                                        <input type="text" id="lastName" class="form-control" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="email" id="email" class="form-control" disabled>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Дата народження</label>
+                                        <input type="date" id="birthDate" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Телефон</label>
+                                        <input type="tel" id="phone" class="form-control" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Місто</label>
+                                        <input type="text" id="city" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Школа</label>
+                                        <input type="text" id="school" class="form-control" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Клас</label>
+                                    <select id="grade" class="form-control" disabled>
+                                        <option value="">Оберіть клас</option>
+                                        <option value="5">5 клас</option>
+                                        <option value="6">6 клас</option>
+                                        <option value="7">7 клас</option>
+                                        <option value="8">8 клас</option>
+                                        <option value="9">9 клас</option>
+                                        <option value="10">10 клас</option>
+                                        <option value="11">11 клас</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Улюблені предмети</label>
+                                    <div class="subjects-grid" id="subjectsGrid">
+                                        <label class="subject-checkbox">
+                                            <input type="checkbox" value="mathematics" disabled>
+                                            <span>Математика</span>
+                                        </label>
+                                        <label class="subject-checkbox">
+                                            <input type="checkbox" value="physics" disabled>
+                                            <span>Фізика</span>
+                                        </label>
+                                        <label class="subject-checkbox">
+                                            <input type="checkbox" value="chemistry" disabled>
+                                            <span>Хімія</span>
+                                        </label>
+                                        <label class="subject-checkbox">
+                                            <input type="checkbox" value="biology" disabled>
+                                            <span>Біологія</span>
+                                        </label>
+                                        <label class="subject-checkbox">
+                                            <input type="checkbox" value="history" disabled>
+                                            <span>Історія</span>
+                                        </label>
+                                        <label class="subject-checkbox">
+                                            <input type="checkbox" value="geography" disabled>
+                                            <span>Географія</span>
+                                        </label>
+                                        <label class="subject-checkbox">
+                                            <input type="checkbox" value="literature" disabled>
+                                            <span>Література</span>
+                                        </label>
+                                        <label class="subject-checkbox">
+                                            <input type="checkbox" value="english" disabled>
+                                            <span>Англійська</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions" id="formActions" style="display: none;">
+                                    <button type="button" class="btn btn-secondary" onclick="cancelEditMode()">
+                                        Скасувати
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        Зберегти зміни
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3>Мої титули</h3>
+                            <div id="profileTitles" class="profile-titles-grid">
+                                <!-- Титули будуть додані динамічно -->
+                            </div>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3>Історія тестів</h3>
+                            <div id="profileTestHistory" class="test-history-list">
+                                <!-- Історія буде додана динамічно -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Додано розділ налаштувань -->
+            <section id="settings" class="content-section">
+                <div class="section-header">
+                    <h2>Налаштування</h2>
+                    <p>Персоналізуйте свій досвід</p>
+                </div>
+
+                <div class="settings-container">
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <h3>🌙 Темна тема</h3>
+                            <p>Зручно для очей у темному приміщенні</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="themeToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <h3>🔊 Звукові ефекти</h3>
+                            <p>Звуки при взаємодії з платформою</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="soundToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="setting-info">
+                            <h3>🏆 Мої досягнення</h3>
+                            <p>Переглянути отримані досягнення</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="showAchievements()">Переглянути</button>
+                    </div>
                 </div>
             </section>
         </main>

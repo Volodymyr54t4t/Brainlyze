@@ -7,8 +7,8 @@
     "difficulty": "easy",
     "timeLimit": 30,
     "passingScore": 60,
-    "timesTaken": 1,
-    "averageScore": 87,
+    "timesTaken": 4,
+    "averageScore": 82,
     "isActive": true,
     "questions": [
       {
@@ -81,8 +81,8 @@
     "difficulty": "medium",
     "timeLimit": 45,
     "passingScore": 70,
-    "timesTaken": 0,
-    "averageScore": 0,
+    "timesTaken": 1,
+    "averageScore": 70,
     "isActive": true,
     "questions": [
       {
@@ -303,8 +303,8 @@
     "difficulty": "medium",
     "timeLimit": 35,
     "passingScore": 65,
-    "timesTaken": 0,
-    "averageScore": 0,
+    "timesTaken": 1,
+    "averageScore": 40,
     "isActive": true,
     "questions": [
       {
@@ -377,8 +377,8 @@
     "difficulty": "hard",
     "timeLimit": 50,
     "passingScore": 75,
-    "timesTaken": 1,
-    "averageScore": 40,
+    "timesTaken": 5,
+    "averageScore": 12,
     "isActive": true,
     "questions": [
       {
@@ -599,8 +599,8 @@
     "difficulty": "hard",
     "timeLimit": 45,
     "passingScore": 75,
-    "timesTaken": 0,
-    "averageScore": 0,
+    "timesTaken": 3,
+    "averageScore": 20,
     "isActive": true,
     "questions": [
       {
@@ -673,8 +673,8 @@
     "difficulty": "easy",
     "timeLimit": 30,
     "passingScore": 60,
-    "timesTaken": 1,
-    "averageScore": 80,
+    "timesTaken": 2,
+    "averageScore": 40,
     "isActive": true,
     "questions": [
       {

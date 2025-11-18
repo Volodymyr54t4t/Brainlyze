@@ -6,44 +6,187 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Авторизація - Платформа Тести</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --primary: #10b981;
+            --secondary: #f59e0b;
+            --border: #e5e7eb;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 20px;
+        }
+
+        .auth-box {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 420px;
+            width: 100%;
+            animation: slideInUp 0.4s ease;
+        }
+
+        .auth-title {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .switch-text {
+            text-align: center;
+            color: #6b7280;
+        }
+
+        .switch-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .switch-link:hover {
+            text-decoration: underline;
+        }
+
+        .message-box {
+            margin-top: 1rem;
+            padding: 0.875rem;
+            border-radius: 0.5rem;
+            display: none;
+            animation: slideInDown 0.3s ease;
+        }
+
+        .message-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .message-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <div
-        style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);">
-        <div
-            style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 400px; width: 100%;">
-            <h1 style="text-align: center; color: var(--primary); margin-bottom: 2rem;">🎓 Платформа Тести</h1>
+    <div class="auth-container">
+        <div class="auth-box">
+            <h1 class="auth-title">🎓 Платформа Тести</h1>
 
             <div id="loginForm">
-                <h2 style="margin-bottom: 1rem;">Вхід</h2>
-                <input type="email" id="loginEmail" placeholder="Email"
-                    style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 0.5rem;">
-                <input type="password" id="loginPassword" placeholder="Пароль"
-                    style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 0.5rem;">
-                <button onclick="login()"
-                    style="width: 100%; padding: 0.75rem; background: var(--primary); color: white; border: none; border-radius: 0.5rem; cursor: pointer; margin-bottom: 1rem;">Увійти</button>
-                <p style="text-align: center;">Немає акаунту? <a href="#" onclick="showRegister(); return false;"
-                        style="color: var(--primary);">Зареєструватись</a></p>
+                <h2 style="margin-bottom: 1.5rem; color: #1f2937;">Вхід</h2>
+                <div class="form-group">
+                    <input type="email" id="loginEmail" class="form-input" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="loginPassword" class="form-input" placeholder="Пароль" required>
+                </div>
+                <button onclick="login()" class="btn-primary">Увійти</button>
+                <p class="switch-text">Немає акаунту? <a href="#" onclick="showRegister(); return false;"
+                        class="switch-link">Зареєструватись</a></p>
             </div>
 
             <div id="registerForm" style="display: none;">
-                <h2 style="margin-bottom: 1rem;">Реєстрація</h2>
-                <input type="email" id="registerEmail" placeholder="Email"
-                    style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 0.5rem;">
-                <input type="password" id="registerPassword" placeholder="Пароль (мін. 6 символів)"
-                    style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 0.5rem;">
-                <button onclick="register()"
-                    style="width: 100%; padding: 0.75rem; background: var(--secondary); color: white; border: none; border-radius: 0.5rem; cursor: pointer; margin-bottom: 1rem;">Зареєструватись</button>
-                <p style="text-align: center;">Вже є акаунт? <a href="#" onclick="showLogin(); return false;"
-                        style="color: var(--primary);">Увійти</a></p>
+                <h2 style="margin-bottom: 1.5rem; color: #1f2937;">Реєстрація</h2>
+                <div class="form-group">
+                    <input type="email" id="registerEmail" class="form-input" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="registerPassword" class="form-input"
+                        placeholder="Пароль (мін. 6 символів)" required>
+                </div>
+                <button onclick="register()" class="btn-primary">Зареєструватись</button>
+                <p class="switch-text">Вже є акаунт? <a href="#" onclick="showLogin(); return false;"
+                        class="switch-link">Увійти</a></p>
             </div>
 
-            <div id="message" style="margin-top: 1rem; padding: 0.75rem; border-radius: 0.5rem; display: none;"></div>
+            <div id="message" class="message-box"></div>
         </div>
     </div>
 
     <script>
+        console.log('[v0] Auth page loaded');
+
+        if (localStorage.getItem('token') && localStorage.getItem('userId')) {
+            console.log('[v0] User already logged in, redirecting to main page');
+            window.location.href = '/index.html';
+        }
+
         function showRegister() {
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('registerForm').style.display = 'block';
@@ -60,17 +203,19 @@
             const msg = document.getElementById('message');
             msg.textContent = text;
             msg.style.display = 'block';
-            msg.style.background = isError ? '#fee2e2' : '#d1fae5';
-            msg.style.color = isError ? '#991b1b' : '#065f46';
+            msg.className = 'message-box ' + (isError ? 'message-error' : 'message-success');
         }
 
         function hideMessage() {
-            document.getElementById('message').style.display = 'none';
+            const msg = document.getElementById('message');
+            msg.style.display = 'none';
         }
 
         async function login() {
-            const email = document.getElementById('loginEmail').value;
+            const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
+
+            console.log('[v0] Login attempt for:', email);
 
             if (!email || !password) {
                 showMessage('Заповніть всі поля', true);
@@ -78,6 +223,7 @@
             }
 
             try {
+                console.log('[v0] Sending login request to /api/login');
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: {
@@ -89,23 +235,37 @@
                     })
                 });
 
+                console.log('[v0] Login response status:', response.status);
                 const data = await response.json();
+                console.log('[v0] Login response data:', data);
 
-                if (response.ok) {
+                if (response.ok && data.token && data.userId) {
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('userId', data.userId);
-                    window.location.href = '/index.html';
+                    localStorage.setItem('userId', data.userId.toString());
+                    console.log('[v0] Stored token:', data.token.substring(0, 20) + '...');
+                    console.log('[v0] Stored userId:', data.userId);
+                    console.log('[v0] Login successful, redirecting to /index.html');
+                    showMessage('Успішний вхід! Перенаправлення...', false);
+
+                    setTimeout(() => {
+                        window.location.href = '/index.html';
+                    }, 500);
                 } else {
+                    console.error('[v0] Login failed:', data.message);
                     showMessage(data.message || 'Помилка входу', true);
                 }
             } catch (error) {
-                showMessage('Помилка з\'єднання з сервером', true);
+                console.error('[v0] Login error:', error);
+                showMessage('Помилка з\'єднання з сервером. Переконайтесь, що сервер запущено на порту 3000.',
+                true);
             }
         }
 
         async function register() {
-            const email = document.getElementById('registerEmail').value;
+            const email = document.getElementById('registerEmail').value.trim();
             const password = document.getElementById('registerPassword').value;
+
+            console.log('[v0] Register attempt for:', email);
 
             if (!email || !password) {
                 showMessage('Заповніть всі поля', true);
@@ -118,6 +278,7 @@
             }
 
             try {
+                console.log('[v0] Sending register request to /api/register');
                 const response = await fetch('/api/register', {
                     method: 'POST',
                     headers: {
@@ -129,17 +290,29 @@
                     })
                 });
 
+                console.log('[v0] Register response status:', response.status);
                 const data = await response.json();
+                console.log('[v0] Register response data:', data);
 
-                if (response.ok) {
+                if (response.ok && data.token && data.userId) {
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('userId', data.userId);
-                    window.location.href = '/index.html';
+                    localStorage.setItem('userId', data.userId.toString());
+                    console.log('[v0] Stored token:', data.token.substring(0, 20) + '...');
+                    console.log('[v0] Stored userId:', data.userId);
+                    console.log('[v0] Registration successful, redirecting to /index.html');
+                    showMessage('Успішна реєстрація! Перенаправлення...', false);
+
+                    setTimeout(() => {
+                        window.location.href = '/index.html';
+                    }, 500);
                 } else {
+                    console.error('[v0] Registration failed:', data.message);
                     showMessage(data.message || 'Помилка реєстрації', true);
                 }
             } catch (error) {
-                showMessage('Помилка з\'єднання з сервером', true);
+                console.error('[v0] Register error:', error);
+                showMessage('Помилка з\'єднання з сервером. Переконайтесь, що сервер запущено на порту 3000.',
+                true);
             }
         }
 
