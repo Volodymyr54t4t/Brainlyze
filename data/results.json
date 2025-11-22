@@ -1016,5 +1016,29 @@
     "category": "mathematics",
     "difficulty": "easy",
     "completed_at": "2025-11-18T15:02:07.163Z"
+  },
+  {
+    "id": 24,
+    "user_id": 3,
+    "quiz_id": 1,
+    "score": 100,
+    "correct_answers": 5,
+    "total_questions": 5,
+    "time_spent": 0,
+    "category": "mathematics",
+    "difficulty": "easy",
+    "completed_at": "2025-11-18T15:48:58.016Z"
+  },
+  {
+    "id": 25,
+    "user_id": 2,
+    "quiz_id": 1,
+    "score": 100,
+    "correct_answers": 5,
+    "total_questions": 5,
+    "time_spent": 0,
+    "category": "mathematics",
+    "difficulty": "easy",
+    "completed_at": "2025-11-19T10:41:14.147Z"
   }
 ]
